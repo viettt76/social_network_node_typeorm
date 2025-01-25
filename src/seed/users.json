@@ -1,0 +1,18 @@
+[
+    {
+        "firstName": "Việt",
+        "lastName": "Hoàng",
+        "username": "hoangviet"
+    },
+    {
+        "firstName": "Vân",
+        "lastName": "Nguyễn",
+        "username": "nguyenvan"
+    },
+    {
+        "firstName": "Admin",
+        "lastName": "",
+        "username": "admin",
+        "role": "ADMIN"
+    }
+]
