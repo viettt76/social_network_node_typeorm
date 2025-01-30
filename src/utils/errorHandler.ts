@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 type ErrorType = {
     statusCode?: number;
@@ -6,7 +6,7 @@ type ErrorType = {
     stack?: string;
 };
 
-export const errorHandler = (error: ErrorType, req: Request, res: Response) => {
+export const errorHandler = (error: ErrorType, req: Request, res: Response, next: NextFunction) => {
     const responseError = {
         statusCode: error.statusCode || 500,
         message: error.message || 'INTERNAL_SERVER_ERROR',

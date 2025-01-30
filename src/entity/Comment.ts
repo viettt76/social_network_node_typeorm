@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany, Index } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
-import { EmotionComment } from './EmotionComment';
+import { CommentReaction } from './CommentReaction';
 import { Post } from './Post';
 
 @Entity({ name: 'comments' })
@@ -41,10 +41,10 @@ export class Comment extends Base {
     })
     replies: Comment[];
 
-    @OneToMany(() => EmotionComment, (emotionComment) => emotionComment.comment, {
+    @OneToMany(() => CommentReaction, (reactionComment) => reactionComment.comment, {
         cascade: ['soft-remove', 'remove', 'recover'],
     })
-    emotions: EmotionComment[];
+    reactions: CommentReaction[];
 
     @ManyToOne(() => Post, (Post) => Post.comments, {
         onDelete: 'CASCADE',

@@ -1,28 +1,72 @@
 import bcrypt from 'bcrypt';
 import { AppDataSource } from '../data-source';
 import { User, Role } from '../entity/User';
+import { Relationship } from '../entity/Relationship';
+import { Post } from '../entity/Post';
+import { PictureOfPost } from '../entity/PictureOfPost';
 import users from './users.json';
+import posts from './posts.json';
 
 async function seed() {
     await AppDataSource.initialize();
 
-    const userRepository = AppDataSource.getRepository(User);
     const hashPassword = bcrypt.hashSync('Abcd123!', 10);
 
+    const userRepository = AppDataSource.getRepository(User);
+    const relationshipRepository = AppDataSource.getRepository(Relationship);
+    const postRepository = AppDataSource.getRepository(Post);
+    const pictureOfPostRepository = AppDataSource.getRepository(PictureOfPost);
+
+    const userIds = [];
     for (const user of users) {
-        const existingType = await userRepository.findOne({
+        const existingUser = await userRepository.findOne({
             where: { username: user.username },
         });
-        if (!existingType) {
-            const newUser: Partial<User> = {
+        if (!existingUser) {
+            const newUser = await userRepository.save({
                 firstName: user.firstName,
                 lastName: user.lastName,
                 username: user.username,
                 password: hashPassword,
                 role: user.role ? (user.role as Role) : Role.USER,
-            };
+            });
 
-            await userRepository.save(newUser);
+            userIds.push(newUser.id);
+        }
+    }
+
+    for (const user1Id of userIds) {
+        for (const user2Id of userIds) {
+            const existingRelationship = await relationshipRepository.findOne({
+                where: [
+                    { user1Id, user2Id },
+                    { user1Id: user2Id, user2Id: user1Id },
+                ],
+            });
+            if (!existingRelationship && user1Id !== user2Id) {
+                await relationshipRepository.insert({
+                    user1Id,
+                    user2Id,
+                });
+            }
+        }
+    }
+
+    for (const post of posts) {
+        const newPost = await postRepository.save({
+            posterId: userIds[0],
+            content: post.content,
+        });
+
+        if (post.images.length > 0) {
+            await Promise.all(
+                post.images.map(async (image) => {
+                    await pictureOfPostRepository.insert({
+                        postId: newPost.id,
+                        pictureUrl: image,
+                    });
+                }),
+            );
         }
     }
 

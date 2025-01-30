@@ -3,9 +3,9 @@ import { Base } from './Base';
 import { ConversationParticipant } from './ConversationParticipant';
 import { Comment } from './Comment';
 import { ConversationHistory } from './ConversationHistory';
-import { EmotionComment } from './EmotionComment';
-import { EmotionMessage } from './EmotionMessage';
-import { EmotionPost } from './EmotionPost';
+import { CommentReaction } from './CommentReaction';
+import { MessageReaction } from './MessageReaction';
+import { PostReaction } from './PostReaction';
 import { FriendRequest } from './FriendRequest';
 import { Message } from './Message';
 import { Notification } from './Notification';
@@ -76,20 +76,20 @@ export class User extends Base {
     })
     conversationParticipant: ConversationParticipant[];
 
-    @OneToMany(() => EmotionComment, (emotionComment) => emotionComment.user, {
+    @OneToMany(() => CommentReaction, (reactionComment) => reactionComment.user, {
         cascade: ['soft-remove', 'recover', 'remove'],
     })
-    emotionComments: EmotionComment[];
+    commentReactions: CommentReaction[];
 
-    @OneToMany(() => EmotionMessage, (emotionMessage) => emotionMessage.user, {
+    @OneToMany(() => MessageReaction, (reactionMessage) => reactionMessage.user, {
         cascade: ['soft-remove', 'recover', 'remove'],
     })
-    emotionMessages: EmotionMessage[];
+    messageReactions: MessageReaction[];
 
-    @OneToMany(() => EmotionPost, (emotionPost) => emotionPost.user, {
+    @OneToMany(() => PostReaction, (reactionPost) => reactionPost.user, {
         cascade: ['soft-remove', 'recover', 'remove'],
     })
-    emotionPosts: EmotionPost[];
+    postReactions: PostReaction[];
 
     @OneToMany(() => FriendRequest, (friendRequest) => friendRequest.sender, {
         cascade: ['soft-remove', 'recover', 'remove'],

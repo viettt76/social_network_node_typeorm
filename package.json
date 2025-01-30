@@ -5,10 +5,11 @@
     "scripts": {
         "dev": "cross-env BUILD_MODE=dev nodemon --watch src --exec ts-node src/server.ts",
         "seed:run": "ts-node src/seed/seed.ts",
-        "typeorm": "typeorm-ts-node-commonjs",
+        "typeorm": "npx typeorm-ts-node-commonjs",
         "migration:generate": "npm run typeorm migration:generate -- -d src/data-source.ts",
         "migration:run": "npm run typeorm migration:run -- -d src/data-source.ts",
-        "migration:revert": "npm run typeorm migration:revert"
+        "migration:revert": "npm run typeorm migration:revert",
+        "drop-schema": "npm run typeorm schema:drop -- -d src/data-source.ts"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",

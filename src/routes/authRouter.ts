@@ -1,11 +1,11 @@
 import express from 'express';
 import { authController } from '@/controllers/authController';
-import * as authValidations from '@/validations/authValidations';
+import { authValidation } from '@/validations/authValidation';
 
-const router = express.Router();
+const authRouter = express.Router();
 
-router.post('/signup', authValidations.signup, authController.signup);
-router.post('/login', authValidations.login, authController.login);
-router.post('/logout', authController.logout);
+authRouter.post('/signup', authValidation.signup, authController.signup);
+authRouter.post('/login', authValidation.login, authController.login);
+authRouter.post('/logout', authController.logout);
 
-export default router;
+export default authRouter;

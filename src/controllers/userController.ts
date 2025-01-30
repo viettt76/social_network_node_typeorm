@@ -6,13 +6,13 @@ import { userService } from '@/services/userService';
 
 class UserController {
     // [GET] /user/my-info
-    async getMyInfo(req: Request, res: Response, next: NextFunction) {
+    async getMyInfo(req: Request, res: Response): Promise<any> {
         const { id } = req.userToken as CustomJwtPayload;
 
         const user = await userService.findUserById(id);
 
         if (user) {
-            res.status(httpStatusCode.OK).json({
+            return res.status(httpStatusCode.OK).json({
                 id: user.id,
                 lastName: user.lastName,
                 firstName: user.firstName,
@@ -27,7 +27,7 @@ class UserController {
         } else {
             res.clearCookie('token');
             res.clearCookie('refreshToken');
-            res.status(userResponse.USER_NOT_FOUND.status).json({
+            return res.status(userResponse.USER_NOT_FOUND.status).json({
                 message: userResponse.USER_NOT_FOUND.message,
             });
         }

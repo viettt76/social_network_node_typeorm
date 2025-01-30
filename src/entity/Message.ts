@@ -1,7 +1,7 @@
 import { Entity, Column, Index, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
-import { EmotionMessage } from './EmotionMessage';
+import { MessageReaction } from './MessageReaction';
 
 export enum MessageType {
     TEXT = 'TEXT',
@@ -36,6 +36,6 @@ export class Message extends Base {
     @JoinColumn({ name: 'senderId', referencedColumnName: 'id' })
     sender: User;
 
-    @OneToMany(() => EmotionMessage, (emotionMessage) => emotionMessage.message)
-    emotions: EmotionMessage[];
+    @OneToMany(() => MessageReaction, (reactionMessage) => reactionMessage.message)
+    reactions: MessageReaction[];
 }

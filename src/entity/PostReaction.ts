@@ -3,7 +3,7 @@ import { Base } from './Base';
 import { User } from './User';
 import { Post } from './Post';
 
-export enum EmotionType {
+export enum PostReactionType {
     LIKE = 'LIKE',
     LOVE = 'LOVE',
     LOVE_LOVE = 'LOVE_LOVE',
@@ -13,23 +13,23 @@ export enum EmotionType {
     ANGRY = 'ANGRY',
 }
 
-@Entity('emotion_posts')
+@Entity('post_reactions')
 @Unique(['postId', 'userId'])
-export class EmotionPost extends Base {
+export class PostReaction extends Base {
     @Column({ type: 'uuid' })
     postId!: string;
 
     @Column({ type: 'uuid' })
     userId!: string;
 
-    @Column({ type: 'enum', enum: EmotionType })
-    emotionType!: EmotionType;
+    @Column({ type: 'enum', enum: PostReactionType })
+    reactionType!: PostReactionType;
 
-    @ManyToOne(() => User, (user) => user.emotionPosts)
+    @ManyToOne(() => User, (user) => user.postReactions)
     @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
     user: User;
 
-    @ManyToOne(() => Post, (post) => post.emotions)
+    @ManyToOne(() => Post, (post) => post.reactions)
     @JoinColumn({ name: 'post', referencedColumnName: 'id' })
     post: Post;
 }

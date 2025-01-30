@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
 import { Comment } from './Comment';
-import { EmotionPost } from './EmotionPost';
+import { PostReaction } from './PostReaction';
 import { PictureOfPost } from './PictureOfPost';
 
 export enum PostVisibility {
@@ -35,8 +35,8 @@ export class Post extends Base {
     @OneToMany(() => Comment, (comment) => comment.post)
     comments: Comment[];
 
-    @OneToMany(() => EmotionPost, (emotionPost) => emotionPost.post)
-    emotions: EmotionPost[];
+    @OneToMany(() => PostReaction, (reactionPost) => reactionPost.post)
+    reactions: PostReaction[];
 
     @OneToMany(() => PictureOfPost, (pictureOfPost) => pictureOfPost.post)
     pictures: PictureOfPost[];

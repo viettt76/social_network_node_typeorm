@@ -30,7 +30,7 @@ class AuthService {
     }): Promise<void> {
         const { firstName, lastName, username, password, gender } = userData;
 
-        await userRepository.save({
+        await userRepository.insert({
             firstName,
             lastName,
             username,
