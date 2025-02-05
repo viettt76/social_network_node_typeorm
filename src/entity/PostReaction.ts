@@ -22,8 +22,8 @@ export class PostReaction extends Base {
     @Column({ type: 'uuid' })
     userId!: string;
 
-    @Column({ type: 'enum', enum: PostReactionType })
-    reactionType!: PostReactionType;
+    @Column({ type: 'enum', enum: PostReactionType, nullable: true })
+    reactionType: PostReactionType | null;
 
     @ManyToOne(() => User, (user) => user.postReactions)
     @JoinColumn({ name: 'userId', referencedColumnName: 'id' })

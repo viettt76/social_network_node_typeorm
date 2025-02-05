@@ -47,6 +47,17 @@ class PostValidation {
 
         validationHandler(correctValidation, req.body, res, next);
     }
+
+    reactToPost(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            postId: Joi.string().uuid().required(),
+            reactionType: Joi.string()
+                .valid(...Object.values(PostReactionType))
+                .allow(null),
+        });
+
+        validationHandler(correctValidation, req.body, res, next);
+    }
 }
 
 export const postValidation = new PostValidation();

@@ -8,7 +8,7 @@ import postRouter from './postRouter';
 const routes = (app: Application, io: Server) => {
     app.use('/auth', authRouter);
     app.use('/user', userRouter(io));
-    app.use('/posts', postRouter);
+    app.use('/posts', postRouter(io));
 };
 
 export default routes;

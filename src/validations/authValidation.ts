@@ -24,7 +24,7 @@ class AuthValidation {
     }
     login(req: Request, res: Response, next: NextFunction) {
         const correctValidation = Joi.object({
-            username: Joi.string().min(6).max(30).required().trim().strict(),
+            username: Joi.string().min(6).max(30).required().trim().strict().allow('admin'),
             password: Joi.string().min(8).max(32).required().trim().strict(),
         });
 

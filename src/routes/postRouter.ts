@@ -1,10 +1,20 @@
 import express from 'express';
 import { postController } from '@/controllers/postController';
 import { postValidation } from '@/validations/postValidation';
+import { Server } from 'socket.io';
+import ioMiddleware from '@/middlewares/ioMiddleware';
 
-const postRouter = express.Router();
+const postRouter = (io: Server) => {
+    const router = express.Router();
 
-postRouter.post('/', postValidation.createPost, postController.createPost);
-postRouter.get('/', postController.getPosts);
+    router.use(ioMiddleware(io));
+
+    router.post('/', postValidation.createPost, postController.createPost);
+    router.get('/', postController.getPosts);
+    router.get('/reactionType', postController.getReactionType);
+    router.put('/reaction', postValidation.reactToPost, postController.reactToPost);
+
+    return router;
+};
 
 export default postRouter;

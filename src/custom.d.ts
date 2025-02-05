@@ -1,10 +1,16 @@
+import { Request } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
+import { Server } from 'socket.io';
 
-interface CustomJwtPayload extends JwtPayload {
+export interface CustomJwtPayload extends JwtPayload {
     id: string;
     firstName: string;
     lastName: string;
     role: string;
+}
+
+export interface IoRequest extends Request {
+    io: Server;
 }
 
 declare global {
@@ -14,5 +20,3 @@ declare global {
         }
     }
 }
-
-export { CustomJwtPayload };
