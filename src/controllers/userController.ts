@@ -1,11 +1,11 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { CustomJwtPayload } from '@/custom';
 import { httpStatusCode } from '@/constants/httpStatusCode';
 import userResponse from '@/constants/userResponse';
 import { userService } from '@/services/userService';
 
 class UserController {
-    // [GET] /user/my-info
+    // [GET] /users/me
     async getMyInfo(req: Request, res: Response): Promise<any> {
         const { id } = req.userToken as CustomJwtPayload;
 

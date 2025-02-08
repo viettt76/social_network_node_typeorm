@@ -11,8 +11,8 @@ const postRouter = (io: Server) => {
 
     router.post('/', postValidation.createPost, postController.createPost);
     router.get('/', postController.getPosts);
-    router.get('/reactionType', postController.getReactionType);
-    router.put('/reaction', postValidation.reactToPost, postController.reactToPost);
+    router.get('/reactionTypes', postController.getReactionTypes);
+    router.put('/reactions', postValidation.reactToPost, postController.reactToPost);
 
     return router;
 };

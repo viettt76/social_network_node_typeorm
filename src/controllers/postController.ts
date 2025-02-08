@@ -24,14 +24,14 @@ class PostController {
         return res.status(httpStatusCode.OK).json(posts);
     }
 
-    // [GET] /posts/reactionType
-    async getReactionType(req: Request, res: Response): Promise<any> {
+    // [GET] /posts/reactionTypes
+    async getReactionTypes(req: Request, res: Response): Promise<any> {
         const reactionTypes = PostReactionType;
 
         return res.status(httpStatusCode.OK).json(reactionTypes);
     }
 
-    // [PUT] /posts/reaction
+    // [PUT] /posts/reactions
     async reactToPost(req: Request, res: Response): Promise<any> {
         const { id } = req.userToken as JwtPayload;
         const { io } = req as IoRequest;

@@ -31,7 +31,7 @@ async function seed() {
                 role: user.role ? (user.role as Role) : Role.USER,
             });
 
-            userIds.push(newUser.id);
+            if (user.role === Role.USER) userIds.push(newUser.id);
         }
     }
 

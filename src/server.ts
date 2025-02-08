@@ -10,6 +10,8 @@ import routes from '@/routes';
 import { AppDataSource } from '@/data-source';
 import { errorHandler } from '@/utils/errorHandler';
 import authMiddleware from '@/middlewares/authMiddleware';
+import events from '@/events';
+import { createClient, RedisClientType } from 'redis';
 
 dotenv.config();
 
@@ -35,8 +37,27 @@ AppDataSource.initialize()
             },
         });
 
+        const client: RedisClientType = createClient({
+            url: process.env.REDIS_URL,
+        });
+
+        client.on('connect', async () => {
+            console.log('Redis client connected successfully');
+        });
+
+        client.on('error', (err) => {
+            console.error('Redis client connection error:', err);
+        });
+
+        try {
+            await client.connect();
+        } catch (error) {
+            console.error('Redis client connection failed', error);
+        }
+
         app.use(authMiddleware);
 
+        events(io, client);
         routes(app, io);
 
         app.use(errorHandler);

@@ -15,6 +15,21 @@
         "username": "vulinh"
     },
     {
+        "firstName": "Huy",
+        "lastName": "Nguyễn",
+        "username": "nguyenhuy"
+    },
+    {
+        "firstName": "Thái",
+        "lastName": "Trần",
+        "username": "tranthai"
+    },
+    {
+        "firstName": "Anh",
+        "lastName": "Ngô",
+        "username": "ngoanh"
+    },
+    {
         "firstName": "Admin",
         "lastName": "",
         "username": "admin",

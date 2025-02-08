@@ -5,7 +5,7 @@ import { userController } from '@/controllers/userController';
 const userRouter = (io: Server) => {
     const router = express.Router();
 
-    router.get('/my-info', userController.getMyInfo);
+    router.get('/me', userController.getMyInfo);
 
     return router;
 };

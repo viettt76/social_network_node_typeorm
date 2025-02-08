@@ -6,6 +6,7 @@ import { Relationship } from '@/entity/Relationship';
 import { User } from '@/entity/User';
 import { Comment } from '@/entity/Comment';
 import { IsNull, Not } from 'typeorm';
+import { pageSize } from '@/constants';
 
 const postRepository = AppDataSource.getRepository(Post);
 const pictureOfPostRepository = AppDataSource.getRepository(PictureOfPost);
@@ -51,8 +52,6 @@ class PostService {
     }
 
     async getPosts({ userId, page }: { userId: string; page: number }): Promise<any[]> {
-        const pageSize = 2;
-
         const posts = await postRepository
             .createQueryBuilder('post')
             .leftJoinAndSelect(PictureOfPost, 'picture', 'picture.postId = post.id')
@@ -95,8 +94,8 @@ class PostService {
                 return `(post.posterId IN (${subQuery1}) OR post.posterId IN (${subQuery2}))`;
             })
             .andWhere('post.isInvalid = false')
-            .offset((page - 1) * pageSize)
-            .limit(pageSize)
+            .offset((page - 1) * pageSize.posts)
+            .limit(pageSize.posts)
             .groupBy('post.id')
             .orderBy('post.createdAt', 'DESC')
             .getRawMany();

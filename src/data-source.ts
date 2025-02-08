@@ -13,4 +13,5 @@ export const AppDataSource = new DataSource({
     logging: false,
     entities: ['src/entity/*.ts'],
     migrations: ['src/migration/*.ts'],
+    timezone: 'Z',
 });

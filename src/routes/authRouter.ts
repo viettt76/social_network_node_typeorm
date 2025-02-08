@@ -4,8 +4,8 @@ import { authValidation } from '@/validations/authValidation';
 
 const authRouter = express.Router();
 
-authRouter.post('/signup', authValidation.signup, authController.signup);
-authRouter.post('/login', authValidation.login, authController.login);
-authRouter.post('/logout', authController.logout);
+authRouter.post('/users', authValidation.signup, authController.signup);
+authRouter.post('/token', authValidation.login, authController.login);
+authRouter.delete('/token', authController.logout);
 
 export default authRouter;
