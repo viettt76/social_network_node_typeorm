@@ -44,6 +44,31 @@ class PostController {
 
         return res.status(httpStatusCode.OK).json();
     }
+
+    // [POST] /posts/comments
+    async sendComment(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as JwtPayload;
+        const { postId, parentCommentId, content, image } = req.body;
+
+        await postService.sendComment({ postId, userId: id, parentCommentId, content, image });
+        return res.status(httpStatusCode.CREATED).json();
+    }
+
+    // [GET] /posts/comments
+    async getComments(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as JwtPayload;
+        const { postId } = req.params;
+        const { page, sortField, sortType } = req.query as { page: string; sortField: string; sortType: string };
+
+        const comments = await postService.getComments({
+            userId: id,
+            page: Number(page),
+            postId,
+            sortField,
+            sortType: (sortType as 'DESC' | 'ASC') || 'DESC',
+        });
+        return res.status(httpStatusCode.OK).json(comments);
+    }
 }
 
 export const postController = new PostController();

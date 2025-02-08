@@ -21,7 +21,7 @@ export class Comment extends Base {
     content?: string;
 
     @Column({ nullable: true })
-    picture?: string;
+    image?: string;
 
     @ManyToOne(() => User, (user) => user.comments, {
         onDelete: 'CASCADE',

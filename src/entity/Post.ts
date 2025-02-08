@@ -3,7 +3,7 @@ import { Base } from './Base';
 import { User } from './User';
 import { Comment } from './Comment';
 import { PostReaction } from './PostReaction';
-import { PictureOfPost } from './PictureOfPost';
+import { ImageOfPost } from './ImageOfPost';
 
 export enum PostVisibility {
     FRIEND = 'FRIEND',
@@ -38,6 +38,6 @@ export class Post extends Base {
     @OneToMany(() => PostReaction, (reactionPost) => reactionPost.post)
     reactions: PostReaction[];
 
-    @OneToMany(() => PictureOfPost, (pictureOfPost) => pictureOfPost.post)
-    pictures: PictureOfPost[];
+    @OneToMany(() => ImageOfPost, (imageOfPost) => imageOfPost.post)
+    images: ImageOfPost[];
 }

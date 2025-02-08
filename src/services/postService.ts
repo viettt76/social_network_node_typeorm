@@ -1,15 +1,16 @@
 import { AppDataSource } from '@/data-source';
 import { PostReaction, PostReactionType } from '@/entity/PostReaction';
-import { PictureOfPost } from '@/entity/PictureOfPost';
+import { ImageOfPost } from '@/entity/ImageOfPost';
 import { Post, PostVisibility } from '@/entity/Post';
 import { Relationship } from '@/entity/Relationship';
 import { User } from '@/entity/User';
 import { Comment } from '@/entity/Comment';
 import { IsNull, Not } from 'typeorm';
 import { pageSize } from '@/constants';
+import { CommentReaction } from '@/entity/CommentReaction';
 
 const postRepository = AppDataSource.getRepository(Post);
-const pictureOfPostRepository = AppDataSource.getRepository(PictureOfPost);
+const imageOfPostRepository = AppDataSource.getRepository(ImageOfPost);
 const postReactionRepository = AppDataSource.getRepository(PostReaction);
 const commentRepository = AppDataSource.getRepository(Comment);
 
@@ -42,9 +43,9 @@ class PostService {
         if (images && images?.length > 0) {
             await Promise.all(
                 images.map(async (image) => {
-                    await pictureOfPostRepository.insert({
+                    await imageOfPostRepository.insert({
                         postId: newPost.id,
-                        pictureUrl: image,
+                        imageUrl: image,
                     });
                 }),
             );
@@ -54,7 +55,7 @@ class PostService {
     async getPosts({ userId, page }: { userId: string; page: number }): Promise<any[]> {
         const posts = await postRepository
             .createQueryBuilder('post')
-            .leftJoinAndSelect(PictureOfPost, 'picture', 'picture.postId = post.id')
+            .leftJoinAndSelect(ImageOfPost, 'image', 'image.postId = post.id')
             .innerJoin(User, 'poster', 'poster.id = post.poster')
             .select([
                 'post.id as postId',
@@ -65,7 +66,7 @@ class PostService {
                 'post.visibilityType as visibilityType',
                 'post.content as content',
                 'post.createdAt as createdAt',
-                "CONCAT('[', GROUP_CONCAT(JSON_OBJECT('id', picture.id, 'pictureUrl', picture.pictureUrl)), ']') as pictures",
+                "CONCAT('[', GROUP_CONCAT(JSON_OBJECT('id', image.id, 'imageUrl', image.imageUrl)), ']') as images",
             ])
             .addSelect((qb) => {
                 return qb
@@ -128,7 +129,7 @@ class PostService {
                     },
                     currentReactionType: post.currentReactionType,
                     reactions,
-                    pictures: JSON.parse(post.pictures)[0]?.id === null ? [] : JSON.parse(post.pictures),
+                    images: JSON.parse(post.images)[0]?.id === null ? [] : JSON.parse(post.images),
                 };
             }),
         );
@@ -156,6 +157,115 @@ class PostService {
                 reactionType,
             });
         }
+    }
+
+    async sendComment(commentData: {
+        postId: string;
+        userId: string;
+        parentCommentId: string;
+        content: string;
+        image: string;
+    }): Promise<any> {
+        const { postId, userId, parentCommentId, content, image } = commentData;
+
+        await commentRepository.insert({
+            postId,
+            commentatorId: userId,
+            parentCommentId,
+            content,
+            image,
+        });
+    }
+
+    async getComments({
+        userId,
+        postId,
+        page,
+        sortField,
+        sortType,
+    }: {
+        userId: string;
+        postId: string;
+        page: number;
+        sortField: string;
+        sortType: 'DESC' | 'ASC';
+    }): Promise<Comment[]> {
+        // const nestComments = (comments) => {
+        //     const commentMap = {};
+        //     const nestedComments = [];
+
+        //     comments.forEach((comment) => {
+        //         comment.children = [];
+        //         commentMap[comment.id] = comment;
+        //     });
+
+        //     comments.forEach((comment) => {
+        //         if (comment.parentCommentId) {
+        //             const id = comment.parentCommentId;
+        //             delete comment.parentCommentId;
+        //             commentMap[id].children.push(comment);
+        //         } else {
+        //             delete comment.parentCommentId;
+        //             nestedComments.push(comment);
+        //         }
+        //     });
+
+        //     return nestedComments;
+        // };
+        const rawComments = await commentRepository
+            .createQueryBuilder('comment')
+            .leftJoinAndSelect('comment.commentator', 'commentatarInfo')
+            .leftJoinAndSelect('comment.replies', 'reply')
+            .select([
+                'comment.id as commentId',
+                'comment.parentCommentId as parentCommentId',
+                'comment.content as content',
+                'comment.image as image',
+                'comment.createdAt as createdAt',
+                'commentatarInfo.id as commentatorId',
+                'commentatarInfo.firstName as commentatorFirstName',
+                'commentatarInfo.lastName as commentatorLastName',
+                'commentatarInfo.avatar as commentatorAvatar',
+            ])
+            .addSelect('COUNT(reply.id)', 'repliesCount')
+            .addSelect((qb) => {
+                return qb
+                    .subQuery()
+                    .from(CommentReaction, 'cr')
+                    .where('cr.commentId = comment.id AND cr.userId = :userId', {
+                        userId,
+                    })
+                    .select('cr.reactionType');
+            }, 'currentReactionType')
+            .where('comment.postId = :postId', { postId })
+            .andWhere('comment.parentCommentId IS NULL')
+            .groupBy('comment.id')
+            .orderBy(`comment.${sortField ?? 'createdAt'}`, sortType ?? 'DESC')
+            .offset((page - 1) * pageSize.posts)
+            .limit(pageSize.comments)
+            .getRawMany();
+
+        // const comments = rawComments.map((comment) => {
+        //     return {
+        //         id: comment.id,
+        //         parentCommentId: comment.parentCommentId,
+        //         content: comment.content,
+        //         createdAt: comment.createdAt,
+        //         currentEmotionName: comment.currentEmotionName,
+        //         commentatorInfo: {
+        //             id: comment.commentatorId,
+        //             firstName: comment.commentatorFirstName,
+        //             lastName: comment.commentatorLastName,
+        //             avatar: comment.commentatorAvatar,
+        //         },
+        //     };
+        // });
+
+        // const numberOfComments = comments.length;
+
+        // const result = nestComments(comments);
+
+        return rawComments;
     }
 }
 

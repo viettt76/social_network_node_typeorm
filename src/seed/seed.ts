@@ -3,7 +3,7 @@ import { AppDataSource } from '../data-source';
 import { User, Role } from '../entity/User';
 import { Relationship } from '../entity/Relationship';
 import { Post } from '../entity/Post';
-import { PictureOfPost } from '../entity/PictureOfPost';
+import { ImageOfPost } from '../entity/ImageOfPost';
 import users from './users.json';
 import posts from './posts.json';
 
@@ -15,7 +15,7 @@ async function seed() {
     const userRepository = AppDataSource.getRepository(User);
     const relationshipRepository = AppDataSource.getRepository(Relationship);
     const postRepository = AppDataSource.getRepository(Post);
-    const pictureOfPostRepository = AppDataSource.getRepository(PictureOfPost);
+    const imageOfPostRepository = AppDataSource.getRepository(ImageOfPost);
 
     const userIds = [];
     for (const user of users) {
@@ -31,7 +31,7 @@ async function seed() {
                 role: user.role ? (user.role as Role) : Role.USER,
             });
 
-            if (user.role === Role.USER) userIds.push(newUser.id);
+            if (user.role !== Role.ADMIN) userIds.push(newUser.id);
         }
     }
 
@@ -61,9 +61,9 @@ async function seed() {
         if (post.images.length > 0) {
             await Promise.all(
                 post.images.map(async (image) => {
-                    await pictureOfPostRepository.insert({
+                    await imageOfPostRepository.insert({
                         postId: newPost.id,
-                        pictureUrl: image,
+                        imageUrl: image,
                     });
                 }),
             );

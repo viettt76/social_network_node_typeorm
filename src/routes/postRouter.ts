@@ -13,6 +13,8 @@ const postRouter = (io: Server) => {
     router.get('/', postController.getPosts);
     router.get('/reactionTypes', postController.getReactionTypes);
     router.put('/reactions', postValidation.reactToPost, postController.reactToPost);
+    router.post('/comments', postValidation.sendComment, postController.sendComment);
+    router.get('/comments/:postId', postValidation.getComments, postController.getComments);
 
     return router;
 };
