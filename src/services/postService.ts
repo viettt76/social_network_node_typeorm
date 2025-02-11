@@ -24,27 +24,15 @@ class PostService {
         });
     }
 
-    async getReactionOfPost({ postId, userId }: { postId: string; userId: string }): Promise<PostReaction | null> {
+    async getPostReaction({ postId, userId }: { postId: string; userId: string }): Promise<PostReaction | null> {
         return await postReactionRepository.findOne({
             where: { postId, userId },
         });
     }
 
-    async getReactionOfComment({
-        commentId,
-        userId,
-    }: {
-        commentId: string;
-        userId: string;
-    }): Promise<CommentReaction | null> {
-        return await commentReactionRepository.findOne({
-            where: { commentId, userId },
-        });
-    }
-
     async getReactionsOfPost(postId: string): Promise<PostReaction[] | null> {
         return await postReactionRepository.find({
-            where: { postId, reactionType: Not(IsNull()) },
+            where: { postId },
         });
     }
 
@@ -137,7 +125,7 @@ class PostService {
             posts.map(async (post) => {
                 const reactions = await postReactionRepository.find({
                     relations: ['user'],
-                    where: { postId: post.postId, reactionType: Not(IsNull()) },
+                    where: { postId: post.postId },
                     select: {
                         id: true,
                         reactionType: true,
@@ -171,7 +159,7 @@ class PostService {
         return result;
     }
 
-    async addReactToPost({
+    async addPostReaction({
         postId,
         userId,
         reactionType,
@@ -187,7 +175,7 @@ class PostService {
         });
     }
 
-    async updateReactToPost({
+    async updatePostReaction({
         postReaction,
         reactionType,
     }: {
@@ -198,11 +186,11 @@ class PostService {
         await postReactionRepository.save(postReaction);
     }
 
-    async deleteReactToPost(reactionPostId: string) {
-        await postReactionRepository.delete({ id: reactionPostId });
+    async deletePostReaction(postReactionId: string) {
+        await postReactionRepository.delete({ id: postReactionId });
     }
 
-    async sendComment(commentData: {
+    async createComment(commentData: {
         postId: string;
         userId: string;
         parentCommentId: string;
@@ -270,7 +258,7 @@ class PostService {
             rawComments.map(async (comment) => {
                 const reactions = await commentReactionRepository.find({
                     relations: ['user'],
-                    where: { commentId: comment.commentId, reactionType: Not(IsNull()) },
+                    where: { commentId: comment.commentId },
                     select: {
                         id: true,
                         reactionType: true,
@@ -351,7 +339,7 @@ class PostService {
             rawComments.map(async (comment) => {
                 const reactions = await commentReactionRepository.find({
                     relations: ['user'],
-                    where: { commentId: comment.commentId, reactionType: Not(IsNull()) },
+                    where: { commentId: comment.commentId },
                     select: {
                         id: true,
                         reactionType: true,
@@ -384,26 +372,47 @@ class PostService {
         return comments;
     }
 
-    async reactToComment({
+    async getCommentReaction({
+        userId,
+        commentId,
+    }: {
+        userId: string;
+        commentId: string;
+    }): Promise<CommentReaction | null> {
+        return commentReactionRepository.findOne({
+            where: { userId, commentId },
+        });
+    }
+
+    async addCommentReaction({
         commentId,
         userId,
         reactionType,
     }: {
         commentId: string;
         userId: string;
-        reactionType: CommentReactionType | null;
-    }): Promise<any> {
-        const commentReaction = await this.getReactionOfComment({ commentId, userId });
-        if (!!commentReaction) {
-            commentReaction.reactionType = reactionType;
-            await commentReactionRepository.save(commentReaction);
-        } else {
-            await commentReactionRepository.insert({
-                commentId,
-                userId,
-                reactionType,
-            });
-        }
+        reactionType: CommentReactionType;
+    }): Promise<CommentReaction> {
+        return await commentReactionRepository.save({
+            commentId,
+            userId,
+            reactionType,
+        });
+    }
+
+    async updateCommentReaction({
+        commentReaction,
+        reactionType,
+    }: {
+        commentReaction: CommentReaction;
+        reactionType: CommentReactionType;
+    }): Promise<void> {
+        commentReaction.reactionType = reactionType;
+        await commentReactionRepository.save(commentReaction);
+    }
+
+    async deleteCommentReaction(commentReactionId: string): Promise<any> {
+        await commentReactionRepository.delete({ id: commentReactionId });
     }
 }
 

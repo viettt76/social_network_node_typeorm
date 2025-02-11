@@ -40,12 +40,12 @@ class PostController {
         const { postId } = req.params;
         const { posterId, reactionType } = req.body;
 
-        const postReaction = await postService.getReactionOfPost({ postId, userId: id });
+        const postReaction = await postService.getPostReaction({ postId, userId: id });
 
         const onlineFriends = await getOnlineFriendsFromRedis(posterId);
 
         if (!postReaction) {
-            const newReaction = await postService.addReactToPost({ postId, userId: id, reactionType });
+            const newReaction = await postService.addPostReaction({ postId, userId: id, reactionType });
             const reactor = await userService.getUserFields({ userId: id, fields: ['avatar'] });
 
             const _newReaction = {
@@ -65,7 +65,7 @@ class PostController {
             if (!onlineFriends.includes(id))
                 io.to(`user-${id}`).emit('reactToPost', { postId, newReaction: _newReaction });
         } else if (reactionType) {
-            await postService.updateReactToPost({ postReaction, reactionType });
+            await postService.updatePostReaction({ postReaction, reactionType });
 
             onlineFriends.forEach((friendId: string) => {
                 io.to(`user-${friendId}`).emit('updateReactToPost', {
@@ -81,7 +81,7 @@ class PostController {
                     reactionType,
                 });
         } else {
-            await postService.deleteReactToPost(postReaction.id);
+            await postService.deletePostReaction(postReaction.id);
 
             onlineFriends.forEach((friendId: string) => {
                 io.to(`user-${friendId}`).emit('deleteReactToPost', {
@@ -102,7 +102,7 @@ class PostController {
         const { io } = req as IoRequest;
         const { postId, parentCommentId, content, image } = req.body;
 
-        const newComment = await postService.sendComment({ postId, userId: id, parentCommentId, content, image });
+        const newComment = await postService.createComment({ postId, userId: id, parentCommentId, content, image });
         const commentator = await userService.getUserFields({ userId: id, fields: ['avatar'] });
 
         if (parentCommentId) {
@@ -167,14 +167,44 @@ class PostController {
 
     // [PUT] /posts/comments/reactions/:commentId
     async reactToComment(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id, firstName, lastName } = req.userToken as JwtPayload;
         const { io } = req as IoRequest;
         const { commentId } = req.params;
         const { postId, reactionType } = req.body;
 
-        const newReaction = await postService.reactToComment({ commentId, userId: id, reactionType });
+        const commentReaction = await postService.getCommentReaction({ userId: id, commentId });
 
-        io.to(`post-${postId}`).emit('reactToPost', { postId, newReaction });
+        if (!commentReaction) {
+            const newReaction = await postService.addCommentReaction({ commentId, userId: id, reactionType });
+            const reactor = await userService.getUserFields({ userId: id, fields: ['avatar'] });
+
+            io.to(`post-${postId}`).emit('reactToComment', {
+                commentId,
+                commentReactionId: newReaction.id,
+                reactionType,
+                user: {
+                    userId: id,
+                    firstName,
+                    lastName,
+                    avatar: reactor?.avatar,
+                },
+            });
+        } else if (reactionType) {
+            await postService.updateCommentReaction({ commentReaction, reactionType });
+
+            io.to(`post-${postId}`).emit('updateReactToComment', {
+                commentId,
+                commentReactionId: commentReaction.id,
+                reactionType,
+            });
+        } else {
+            await postService.deleteCommentReaction(commentReaction.id);
+
+            io.to(`post-${postId}`).emit('deleteReactToComment', {
+                commentId,
+                commentReactionId: commentReaction.id,
+            });
+        }
 
         return res.status(httpStatusCode.OK).json();
     }

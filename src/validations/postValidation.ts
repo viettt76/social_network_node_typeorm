@@ -93,7 +93,7 @@ class PostValidation {
     reactToComment(req: Request, res: Response, next: NextFunction) {
         const correctValidation = Joi.object({
             commentId: Joi.string().uuid().required(),
-            posterId: Joi.string().uuid().required(),
+            postId: Joi.string().uuid().required(),
             reactionType: Joi.string()
                 .valid(...Object.values(PostReactionType))
                 .allow(null),
