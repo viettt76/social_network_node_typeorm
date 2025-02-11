@@ -3,8 +3,7 @@ import { parse } from 'cookie';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { getRedisClient } from '@/lib/redisClient';
 import postEvent from './postEvent';
-import relationshipEvent from './relationshipEvent';
-import { addOnlineFriends, addUserOnline, removeOnlineFriends, removeUserOnline } from '@/services/redisService';
+import { addOnlineFriends, addUserOnline, removeUserOnline } from '@/services/redisService';
 
 const events = (io: Server) => {
     io.on('connect', async (socket: Socket) => {
@@ -29,7 +28,6 @@ const events = (io: Server) => {
             await addOnlineFriends(userId);
 
             postEvent(socket);
-            relationshipEvent(redisClient);
 
             socket.on('disconnect', async () => {
                 socket.leave(`user-${userToken.id}`);
