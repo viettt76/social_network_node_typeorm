@@ -49,5 +49,6 @@ export class Comment extends Base {
     @ManyToOne(() => Post, (Post) => Post.comments, {
         onDelete: 'CASCADE',
     })
+    @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
     post: Post;
 }

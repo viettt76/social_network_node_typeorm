@@ -1,11 +1,15 @@
-import { RedisClientType } from 'redis';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { parse } from 'cookie';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { getRedisClient } from '@/lib/redisClient';
+import postEvent from './postEvent';
+import relationshipEvent from './relationshipEvent';
+import { addOnlineFriends, addUserOnline, removeOnlineFriends, removeUserOnline } from '@/services/redisService';
 
-const events = (io: Server, client: RedisClientType) => {
-    io.on('connect', async (socket) => {
+const events = (io: Server) => {
+    io.on('connect', async (socket: Socket) => {
         try {
+            const redisClient = getRedisClient();
             const cookies = socket.handshake.headers.cookie;
             if (!cookies) return socket.disconnect();
 
@@ -21,11 +25,15 @@ const events = (io: Server, client: RedisClientType) => {
 
             socket.join(`user-${userToken.id}`);
 
-            await client.setEx(`user_online_${userId}`, 300, 'true');
+            await addUserOnline(userId);
+            await addOnlineFriends(userId);
+
+            postEvent(socket);
+            relationshipEvent(redisClient);
 
             socket.on('disconnect', async () => {
                 socket.leave(`user-${userToken.id}`);
-                await client.del(`user_online_${userToken.id}`);
+                await removeUserOnline(userId);
             });
         } catch (error) {
             console.error('Socket connection error:', error);

@@ -37,12 +37,13 @@ class PostValidation {
     reactToPost(req: Request, res: Response, next: NextFunction) {
         const correctValidation = Joi.object({
             postId: Joi.string().uuid().required(),
+            posterId: Joi.string().uuid().required(),
             reactionType: Joi.string()
                 .valid(...Object.values(PostReactionType))
                 .allow(null),
         });
 
-        validationHandler(correctValidation, req.body, res, next);
+        validationHandler(correctValidation, { ...req.params, ...req.body }, res, next);
     }
 
     sendComment(req: Request, res: Response, next: NextFunction) {
@@ -76,6 +77,29 @@ class PostValidation {
         });
 
         validationHandler(correctValidation, { ...req.params, ...req.query }, res, next);
+    }
+
+    getCommentReplies(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            commentId: Joi.string().uuid().required(),
+            page: Joi.number().min(1),
+            sortField: Joi.string().required(),
+            sortType: Joi.string().valid('DESC', 'ASC'),
+        });
+
+        validationHandler(correctValidation, { ...req.params, ...req.query }, res, next);
+    }
+
+    reactToComment(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            commentId: Joi.string().uuid().required(),
+            posterId: Joi.string().uuid().required(),
+            reactionType: Joi.string()
+                .valid(...Object.values(PostReactionType))
+                .allow(null),
+        });
+
+        validationHandler(correctValidation, { ...req.params, ...req.body }, res, next);
     }
 }
 

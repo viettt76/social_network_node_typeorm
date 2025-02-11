@@ -23,7 +23,7 @@ export class CommentReaction extends Base {
     userId!: string;
 
     @Column({ type: 'enum', enum: CommentReactionType })
-    reactionType!: CommentReactionType;
+    reactionType!: CommentReactionType | null;
 
     @ManyToOne(() => User, (user) => user.commentReactions)
     @JoinColumn({ name: 'userId', referencedColumnName: 'id' })

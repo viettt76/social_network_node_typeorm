@@ -9,6 +9,14 @@ class UserService {
             id,
         });
     }
+
+    async getUserFields({ userId, fields }: { userId: string; fields: string[] }): Promise<User | null> {
+        const obj = Object.fromEntries(fields.map((field) => [field, true]));
+        return await userRepository.findOne({
+            where: { id: userId },
+            select: obj,
+        });
+    }
 }
 
 export const userService = new UserService();

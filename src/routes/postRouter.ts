@@ -12,9 +12,11 @@ const postRouter = (io: Server) => {
     router.post('/', postValidation.createPost, postController.createPost);
     router.get('/', postController.getPosts);
     router.get('/reactionTypes', postController.getReactionTypes);
-    router.put('/reactions', postValidation.reactToPost, postController.reactToPost);
+    router.put('/reactions/:postId', postValidation.reactToPost, postController.reactToPost);
     router.post('/comments', postValidation.sendComment, postController.sendComment);
     router.get('/comments/:postId', postValidation.getComments, postController.getComments);
+    router.get('/comments/:commentId/replies', postValidation.getCommentReplies, postController.getCommentReplies);
+    router.put('/comments/reactions/:commentId', postValidation.reactToComment, postController.reactToComment);
 
     return router;
 };
