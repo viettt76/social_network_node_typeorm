@@ -1,4 +1,4 @@
-import { Entity, Column, Index, Unique, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, Index, Unique, ManyToOne, JoinColumn, BeforeInsert } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
 
@@ -10,7 +10,9 @@ export enum RelationshipType {
 }
 
 @Entity({ name: 'relationships' })
-@Unique(['user1', 'user2'])
+@Unique(['user1Id', 'user2Id'])
+@Index('user1Id')
+@Index('user2Id')
 export class Relationship extends Base {
     @Column({ type: 'uuid' })
     user1Id!: string;
@@ -28,4 +30,11 @@ export class Relationship extends Base {
     @ManyToOne(() => User, (user) => user.relationshipAsUser2)
     @JoinColumn({ name: 'user2Id', referencedColumnName: 'id' })
     user2: User;
+
+    @BeforeInsert()
+    sortUserIds() {
+        if (this.user1 > this.user2) {
+            [this.user1, this.user2] = [this.user2, this.user1];
+        }
+    }
 }

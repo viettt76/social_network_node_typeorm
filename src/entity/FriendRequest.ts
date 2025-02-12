@@ -1,9 +1,11 @@
-import { Entity, Column, Unique, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, Unique, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
 
 @Entity({ name: 'friend_requests' })
 @Unique(['senderId', 'receiverId'])
+@Index('senderId')
+@Index('receiverId')
 export class FriendRequest extends Base {
     @Column({ type: 'uuid' })
     senderId!: string;

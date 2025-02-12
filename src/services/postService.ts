@@ -1,11 +1,10 @@
 import { AppDataSource } from '@/data-source';
 import { PostReaction, PostReactionType } from '@/entity/PostReaction';
 import { ImageOfPost } from '@/entity/ImageOfPost';
-import { Post, PostVisibility } from '@/entity/Post';
+import { Post, PostStatus, PostVisibility } from '@/entity/Post';
 import { Relationship } from '@/entity/Relationship';
 import { User } from '@/entity/User';
 import { Comment } from '@/entity/Comment';
-import { IsNull, Not } from 'typeorm';
 import { pageSize } from '@/constants';
 import { CommentReaction, CommentReactionType } from '@/entity/CommentReaction';
 
@@ -114,7 +113,7 @@ class PostService {
 
                 return `(post.posterId IN (${subQuery1}) OR post.posterId IN (${subQuery2}))`;
             })
-            .andWhere('post.isInvalid = false')
+            .andWhere('post.status != :postStatus', { postStatus: PostStatus.INVALID })
             .offset((page - 1) * pageSize.posts)
             .limit(pageSize.posts)
             .groupBy('post.id')

@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, OneToOne, Index } from 'typeorm';
+import { Entity, Column, OneToMany } from 'typeorm';
 import { Base } from './Base';
 import { ConversationParticipant } from './ConversationParticipant';
 import { Comment } from './Comment';
@@ -81,7 +81,7 @@ export class User extends Base {
     })
     commentReactions: CommentReaction[];
 
-    @OneToMany(() => MessageReaction, (reactionMessage) => reactionMessage.user, {
+    @OneToMany(() => MessageReaction, (messageReaction) => messageReaction.user, {
         cascade: ['soft-remove', 'recover', 'remove'],
     })
     messageReactions: MessageReaction[];

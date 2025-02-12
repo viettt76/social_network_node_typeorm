@@ -1,4 +1,4 @@
-import { Entity, Column, Unique, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, Unique, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
 import { Post } from './Post';
@@ -15,6 +15,7 @@ export enum PostReactionType {
 
 @Entity('post_reactions')
 @Unique(['postId', 'userId'])
+@Index('postId')
 export class PostReaction extends Base {
     @Column({ type: 'uuid' })
     postId!: string;

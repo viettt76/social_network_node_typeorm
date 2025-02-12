@@ -1,4 +1,4 @@
-import { Entity, Column, Unique, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, Unique, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
 import { Message } from './Message';
@@ -15,6 +15,7 @@ export enum MessageReactionType {
 
 @Entity({ name: 'message_reactions' })
 @Unique(['messageId', 'userId'])
+@Index('messageId')
 export class MessageReaction extends Base {
     @Column({ type: 'uuid' })
     messageId!: string;

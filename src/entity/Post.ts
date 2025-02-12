@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany, Index } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
 import { Comment } from './Comment';
@@ -11,7 +11,15 @@ export enum PostVisibility {
     PRIVATE = 'PRIVATE',
 }
 
+export enum PostStatus {
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    INVALID = 'INVALID',
+}
+
 @Entity({ name: 'posts' })
+@Index('posterId')
+@Index('status')
 export class Post extends Base {
     @Column({ type: 'uuid' })
     posterId!: string;
@@ -22,11 +30,8 @@ export class Post extends Base {
     @Column({ type: 'text', nullable: true })
     content?: string;
 
-    @Column({ default: false })
-    isApproved!: boolean;
-
-    @Column({ default: false })
-    isInvalid!: boolean;
+    @Column({ type: 'enum', enum: PostStatus, default: PostStatus.PENDING })
+    status!: PostStatus;
 
     @ManyToOne(() => User, (user) => user.posts)
     @JoinColumn({ name: 'posterId', referencedColumnName: 'id' })

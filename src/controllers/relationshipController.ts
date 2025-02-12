@@ -98,7 +98,7 @@ class RelationshipController {
             });
         }
 
-        await relationshipService.acceptFriendRequest({
+        await relationshipService.addFriend({
             userId: id,
             senderId,
             friendRequestId,

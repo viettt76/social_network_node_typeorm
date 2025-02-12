@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToOne, Unique } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { Base } from './Base';
 import { Conversation } from './Conversation';
 import { User } from './User';
@@ -24,10 +24,10 @@ export class ConversationParticipant extends Base {
     role!: Role;
 
     @ManyToOne(() => Conversation, (conversation) => conversation.conversationParticipants)
-    @JoinColumn({name: 'conversationId', referencedColumnName: 'id'})
+    @JoinColumn({ name: 'conversationId', referencedColumnName: 'id' })
     conversation: Conversation;
 
     @ManyToOne(() => User, (user) => user.conversationParticipant)
-    @JoinColumn({name: 'userId', referencedColumnName: 'id'})
+    @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
     user: User;
 }

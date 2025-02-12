@@ -1,4 +1,4 @@
-import { Entity, Column, Unique, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, Unique, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
 import { Comment } from './Comment';
@@ -15,6 +15,7 @@ export enum CommentReactionType {
 
 @Entity('comment_reactions')
 @Unique(['commentId', 'userId'])
+@Index('commentId')
 export class CommentReaction extends Base {
     @Column({ type: 'uuid' })
     commentId!: string;

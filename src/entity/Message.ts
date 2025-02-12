@@ -2,6 +2,7 @@ import { Entity, Column, Index, ManyToOne, JoinColumn, OneToMany } from 'typeorm
 import { Base } from './Base';
 import { User } from './User';
 import { MessageReaction } from './MessageReaction';
+import { MessageRead } from './MessageRead';
 
 export enum MessageType {
     TEXT = 'TEXT',
@@ -29,13 +30,13 @@ export class Message extends Base {
     })
     messageType: MessageType;
 
-    @Column({ default: false })
-    isRead: boolean;
+    @OneToMany(() => MessageRead, (messageRead) => messageRead.message)
+    reads: MessageRead[];
 
     @ManyToOne(() => User, (user) => user.message)
     @JoinColumn({ name: 'senderId', referencedColumnName: 'id' })
     sender: User;
 
-    @OneToMany(() => MessageReaction, (reactionMessage) => reactionMessage.message)
+    @OneToMany(() => MessageReaction, (messageReaction) => messageReaction.message)
     reactions: MessageReaction[];
 }

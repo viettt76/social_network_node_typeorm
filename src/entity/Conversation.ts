@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, OneToOne } from 'typeorm';
+import { Entity, Column, OneToMany, OneToOne, Index } from 'typeorm';
 import { Base } from './Base';
 import { ConversationParticipant } from './ConversationParticipant';
 import { Message } from './Message';
@@ -10,12 +10,13 @@ export enum ConversationType {
 }
 
 @Entity({ name: 'conversations' })
+@Index('name')
 export class Conversation extends Base {
     @Column({ type: 'enum', enum: ConversationType })
     type!: ConversationType;
 
-    @Column({ nullable: true })
-    name?: string;
+    @Column()
+    name!: string;
 
     @Column({ nullable: true })
     avatar?: string;

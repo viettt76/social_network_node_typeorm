@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { Base } from './Base';
 import { User } from './User';
 
@@ -11,6 +11,8 @@ export enum NotificationType {
 }
 
 @Entity({ name: 'notifications' })
+@Index('userId')
+@Index(['userId', 'isRead'])
 export class Notification extends Base {
     @Column({ type: 'uuid' })
     userId!: string;

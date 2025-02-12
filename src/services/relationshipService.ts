@@ -140,7 +140,7 @@ class RelationshipService {
         return suggestions;
     }
 
-    async acceptFriendRequest({
+    async addFriend({
         userId,
         senderId,
         friendRequestId,

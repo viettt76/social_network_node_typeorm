@@ -7,6 +7,7 @@ import { Post } from './Post';
 @Entity({ name: 'comments' })
 @Index(['postId'])
 @Index(['postId', 'createdAt'])
+@Index('parentCommentId')
 export class Comment extends Base {
     @Column({ type: 'uuid' })
     postId!: string;
