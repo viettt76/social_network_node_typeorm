@@ -15,9 +15,9 @@ export enum MessageReactionType {
 
 @Entity({ name: 'message_reactions' })
 @Unique(['messageId', 'userId'])
-@Index('messageId')
 export class MessageReaction extends Base {
     @Column({ type: 'uuid' })
+    @Index()
     messageId!: string;
 
     @Column({ type: 'uuid' })

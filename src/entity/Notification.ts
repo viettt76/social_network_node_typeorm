@@ -11,10 +11,10 @@ export enum NotificationType {
 }
 
 @Entity({ name: 'notifications' })
-@Index('userId')
 @Index(['userId', 'isRead'])
 export class Notification extends Base {
     @Column({ type: 'uuid' })
+    @Index()
     userId!: string;
 
     @Column({ type: 'uuid' })

@@ -10,12 +10,12 @@ export enum ConversationType {
 }
 
 @Entity({ name: 'conversations' })
-@Index('name')
 export class Conversation extends Base {
     @Column({ type: 'enum', enum: ConversationType })
     type!: ConversationType;
 
     @Column()
+    @Index()
     name!: string;
 
     @Column({ nullable: true })

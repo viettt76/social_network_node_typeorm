@@ -3,9 +3,9 @@ import { Base } from './Base';
 import { Post } from './Post';
 
 @Entity({ name: 'image_of_posts' })
-@Index('postId')
 export class ImageOfPost extends Base {
     @Column({ type: 'uuid' })
+    @Index()
     postId!: string;
 
     @Column()

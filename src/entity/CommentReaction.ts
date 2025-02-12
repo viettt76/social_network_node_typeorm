@@ -15,9 +15,9 @@ export enum CommentReactionType {
 
 @Entity('comment_reactions')
 @Unique(['commentId', 'userId'])
-@Index('commentId')
 export class CommentReaction extends Base {
     @Column({ type: 'uuid' })
+    @Index()
     commentId!: string;
 
     @Column({ type: 'uuid' })

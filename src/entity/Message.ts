@@ -12,12 +12,12 @@ export enum MessageType {
 }
 
 @Entity({ name: 'messages' })
-@Index(['conversationId'])
 export class Message extends Base {
     @Column({ type: 'uuid' })
     senderId!: string;
 
     @Column({ type: 'uuid' })
+    @Index()
     conversationId!: string;
 
     @Column({ type: 'text', nullable: true })

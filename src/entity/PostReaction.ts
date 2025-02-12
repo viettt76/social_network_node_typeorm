@@ -15,9 +15,9 @@ export enum PostReactionType {
 
 @Entity('post_reactions')
 @Unique(['postId', 'userId'])
-@Index('postId')
 export class PostReaction extends Base {
     @Column({ type: 'uuid' })
+    @Index()
     postId!: string;
 
     @Column({ type: 'uuid' })

@@ -18,10 +18,9 @@ export enum PostStatus {
 }
 
 @Entity({ name: 'posts' })
-@Index('posterId')
-@Index('status')
 export class Post extends Base {
     @Column({ type: 'uuid' })
+    @Index()
     posterId!: string;
 
     @Column({ type: 'enum', enum: PostVisibility, default: PostVisibility.FRIEND })
@@ -31,6 +30,7 @@ export class Post extends Base {
     content?: string;
 
     @Column({ type: 'enum', enum: PostStatus, default: PostStatus.PENDING })
+    @Index()
     status!: PostStatus;
 
     @ManyToOne(() => User, (user) => user.posts)

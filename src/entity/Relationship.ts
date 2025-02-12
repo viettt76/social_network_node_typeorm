@@ -11,13 +11,13 @@ export enum RelationshipType {
 
 @Entity({ name: 'relationships' })
 @Unique(['user1Id', 'user2Id'])
-@Index('user1Id')
-@Index('user2Id')
 export class Relationship extends Base {
     @Column({ type: 'uuid' })
+    @Index()
     user1Id!: string;
 
     @Column({ type: 'uuid' })
+    @Index()
     user2Id!: string;
 
     @Column({ type: 'enum', enum: RelationshipType, default: RelationshipType.FRIEND })

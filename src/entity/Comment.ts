@@ -5,17 +5,17 @@ import { CommentReaction } from './CommentReaction';
 import { Post } from './Post';
 
 @Entity({ name: 'comments' })
-@Index(['postId'])
 @Index(['postId', 'createdAt'])
-@Index('parentCommentId')
 export class Comment extends Base {
     @Column({ type: 'uuid' })
+    @Index()
     postId!: string;
 
     @Column({ type: 'uuid' })
     commentatorId!: string;
 
     @Column({ type: 'uuid', nullable: true })
+    @Index()
     parentCommentId?: string;
 
     @Column({ type: 'text', nullable: true })
