@@ -20,8 +20,8 @@ export class ConversationParticipant extends Base {
     @Column({ nullable: true })
     nickname?: string;
 
-    @Column({ type: 'enum', enum: Role, default: Role.MEMBER })
-    role!: Role;
+    @Column({ type: 'enum', enum: Role, default: null })
+    role?: Role;
 
     @ManyToOne(() => Conversation, (conversation) => conversation.conversationParticipants)
     @JoinColumn({ name: 'conversationId', referencedColumnName: 'id' })

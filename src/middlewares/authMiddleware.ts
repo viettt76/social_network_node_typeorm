@@ -1,6 +1,7 @@
 import { authResponse } from '@/constants/authResponse';
+import { CustomJwtPayload } from '@/custom';
 import { NextFunction, Request, Response } from 'express';
-import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
+import { verify, sign, JwtPayload, VerifyErrors } from 'jsonwebtoken';
 
 const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const nonSecurePaths = ['/auth/users', '/auth/token'];
@@ -17,9 +18,9 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const { token, refreshToken } = req.cookies;
 
     const handleRefreshToken = () => {
-        const userToken = jwt.verify(refreshToken, jwtRefreshSecret) as JwtPayload;
+        const userToken = verify(refreshToken, jwtRefreshSecret) as CustomJwtPayload;
 
-        const newToken = jwt.sign(
+        const newToken = sign(
             {
                 id: userToken.id,
                 firstName: userToken.firstName,
@@ -63,7 +64,7 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
             handleInvalidToken(authResponse.INVALID_TOKEN.message);
         }
     } else {
-        jwt.verify(token, jwtAccessSecret, (err: VerifyErrors | null, userToken: JwtPayload | string | undefined) => {
+        verify(token, jwtAccessSecret, (err: VerifyErrors | null, userToken: JwtPayload | string | undefined) => {
             if (err) {
                 if (refreshToken) {
                     try {

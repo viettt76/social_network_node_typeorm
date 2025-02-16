@@ -30,6 +30,21 @@
         "username": "ngoanh"
     },
     {
+        "firstName": "Long",
+        "lastName": "Hoàng",
+        "username": "hoanglong"
+    },
+    {
+        "firstName": "Lan",
+        "lastName": "Ngọc",
+        "username": "ngoclan"
+    },
+    {
+        "firstName": "Thảo",
+        "lastName": "Bùi",
+        "username": "buithao"
+    },
+    {
         "firstName": "Admin",
         "lastName": "",
         "username": "admin",

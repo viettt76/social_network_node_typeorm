@@ -3,4 +3,5 @@ export const pageSize = {
     suggestionsMakeFriend: 10,
     friendRequests: 10,
     comments: 10,
+    messages: 20,
 };

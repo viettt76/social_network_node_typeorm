@@ -1,16 +1,15 @@
 import { Request, Response } from 'express';
 import { postService } from '@/services/postService';
-import { JwtPayload } from 'jsonwebtoken';
 import { httpStatusCode } from '@/constants/httpStatusCode';
 import { PostReactionType } from '@/entity/PostReaction';
-import { IoRequest } from '@/custom';
+import { CustomJwtPayload, IoRequest } from '@/custom';
 import { userService } from '@/services/userService';
 import { getOnlineFriendsFromRedis } from '@/services/redisService';
 
 class PostController {
     // [POST] /posts
     async createPost(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
         const { content, images } = req.body;
 
         await postService.createPost({ posterId: id, content, images });
@@ -19,7 +18,7 @@ class PostController {
 
     // [GET] /posts
     async getPosts(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
         const { page } = req.query;
         const posts = await postService.getPosts({ userId: id, page: Number(page) });
 
@@ -35,7 +34,7 @@ class PostController {
 
     // [PUT] /posts/reactions/:postId
     async reactToPost(req: Request, res: Response): Promise<any> {
-        const { id, firstName, lastName } = req.userToken as JwtPayload;
+        const { id, firstName, lastName } = req.userToken as CustomJwtPayload;
         const { io } = req as IoRequest;
         const { postId } = req.params;
         const { posterId, reactionType } = req.body;
@@ -98,7 +97,7 @@ class PostController {
 
     // [POST] /posts/comments
     async sendComment(req: Request, res: Response): Promise<any> {
-        const { id, firstName, lastName } = req.userToken as JwtPayload;
+        const { id, firstName, lastName } = req.userToken as CustomJwtPayload;
         const { io } = req as IoRequest;
         const { postId, parentCommentId, content, image } = req.body;
 
@@ -135,7 +134,7 @@ class PostController {
 
     // [GET] /posts/comments
     async getComments(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
         const { postId } = req.params;
         const { page, sortField, sortType } = req.query as { page: string; sortField: string; sortType: string };
 
@@ -151,7 +150,7 @@ class PostController {
 
     // [GET] /posts/comments/:commentId/replies
     async getCommentReplies(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
         const { commentId } = req.params;
         const { page, sortField, sortType } = req.query as { page: string; sortField: string; sortType: string };
 
@@ -167,7 +166,7 @@ class PostController {
 
     // [PUT] /posts/comments/reactions/:commentId
     async reactToComment(req: Request, res: Response): Promise<any> {
-        const { id, firstName, lastName } = req.userToken as JwtPayload;
+        const { id, firstName, lastName } = req.userToken as CustomJwtPayload;
         const { io } = req as IoRequest;
         const { commentId } = req.params;
         const { postId, reactionType } = req.body;

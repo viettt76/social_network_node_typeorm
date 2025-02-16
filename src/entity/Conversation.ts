@@ -14,9 +14,9 @@ export class Conversation extends Base {
     @Column({ type: 'enum', enum: ConversationType })
     type!: ConversationType;
 
-    @Column()
+    @Column({ nullable: true })
     @Index()
-    name!: string;
+    name?: string;
 
     @Column({ nullable: true })
     avatar?: string;

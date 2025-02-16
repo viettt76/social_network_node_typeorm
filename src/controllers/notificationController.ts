@@ -1,13 +1,8 @@
 import { Request, Response } from 'express';
 import { CustomJwtPayload } from '@/custom';
 import { httpStatusCode } from '@/constants/httpStatusCode';
-import { AppDataSource } from '@/data-source';
-import { Notification, NotificationType } from '@/entity/Notification';
+import { Notification } from '@/entity/Notification';
 import { notificationService } from '@/services/notificationService';
-import { User } from '@/entity/User';
-
-const notificationRepository = AppDataSource.getRepository(Notification);
-const userRepository = AppDataSource.getRepository(User);
 
 class NotificationController {
     // [GET] /notifications

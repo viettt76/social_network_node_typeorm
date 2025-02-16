@@ -1,14 +1,13 @@
 import { Server, Socket } from 'socket.io';
 import { parse } from 'cookie';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import { getRedisClient } from '@/lib/redisClient';
+import { verify } from 'jsonwebtoken';
 import postEvent from './postEvent';
 import { addOnlineFriends, addUserOnline, removeUserOnline } from '@/services/redisService';
+import { CustomJwtPayload } from '@/custom';
 
 const events = (io: Server) => {
     io.on('connect', async (socket: Socket) => {
         try {
-            const redisClient = getRedisClient();
             const cookies = socket.handshake.headers.cookie;
             if (!cookies) return socket.disconnect();
 
@@ -18,7 +17,7 @@ const events = (io: Server) => {
             const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
             if (!JWT_ACCESS_SECRET) throw new Error('JWT secret is missing!');
 
-            const userToken = jwt.verify(token, JWT_ACCESS_SECRET) as JwtPayload;
+            const userToken = verify(token, JWT_ACCESS_SECRET) as CustomJwtPayload;
             const userId = userToken.id;
             if (!userId) return socket.disconnect();
 

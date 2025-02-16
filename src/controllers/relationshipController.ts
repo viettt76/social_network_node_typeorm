@@ -1,18 +1,17 @@
 import { httpStatusCode } from '@/constants/httpStatusCode';
 import relationshipResponse from '@/constants/relationshipResponse';
-import { IoRequest } from '@/custom';
+import { CustomJwtPayload, IoRequest } from '@/custom';
 import { NotificationType } from '@/entity/Notification';
 import { notificationService } from '@/services/notificationService';
 import { relationshipService } from '@/services/relationshipService';
 import { userService } from '@/services/userService';
 import ApiError from '@/utils/ApiError';
 import { Request, Response } from 'express';
-import { JwtPayload } from 'jsonwebtoken';
 
 class RelationshipController {
     // [GET] /relationships/suggestions
     async getSuggestions(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
         const { page } = req.query;
         const suggestions = await relationshipService.getSuggestions({ userId: id, page: Number(page) });
 
@@ -21,7 +20,7 @@ class RelationshipController {
 
     // [POST] /relationships/friend-requests
     async sendFriendRequest(req: Request, res: Response): Promise<any> {
-        const { id, firstName, lastName } = req.userToken as JwtPayload;
+        const { id, firstName, lastName } = req.userToken as CustomJwtPayload;
         const { receiverId } = req.body;
         const { io } = req as IoRequest;
 
@@ -53,7 +52,7 @@ class RelationshipController {
 
     // [GET] /relationships/friend-requests
     async getFriendRequests(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
         const { page } = req.query;
 
         const friendRequests = await relationshipService.getFriendRequests({ receiverId: id, page: Number(page) });
@@ -63,7 +62,7 @@ class RelationshipController {
 
     // [GET] /relationships/friend-requests/count
     async getFriendRequestCount(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
 
         const friendRequestCount = await relationshipService.getFriendRequestCount(id);
 
@@ -72,7 +71,7 @@ class RelationshipController {
 
     // [GET] /relationships/sent-requests
     async getSentFriendRequests(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
         const { page } = req.query;
 
         const sentRequests = await relationshipService.getSentFriendRequests({ senderId: id, page: Number(page) });
@@ -82,7 +81,7 @@ class RelationshipController {
 
     // [POST] /relationships/friend-requests/:friendRequestId/acceptance
     async acceptFriendRequest(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
         const { friendRequestId } = req.params;
         const { senderId } = req.body;
 
@@ -125,7 +124,7 @@ class RelationshipController {
 
     // [GET] /relationships/friends
     async getFriends(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
 
         const friends = await relationshipService.getFriends(id);
 
@@ -134,7 +133,7 @@ class RelationshipController {
 
     // [DELETE] /relationships/:friendId
     async unfriend(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as JwtPayload;
+        const { id } = req.userToken as CustomJwtPayload;
         const { friendId } = req.params;
 
         await relationshipService.unfriend({ userId: id, friendId });
