@@ -3,6 +3,10 @@ import { CustomJwtPayload, IoRequest } from '@/custom';
 import { httpStatusCode } from '@/constants/httpStatusCode';
 import { conversationService } from '@/services/conversationService';
 import { userService } from '@/services/userService';
+import ApiError from '@/utils/ApiError';
+import conversationResponse from '@/constants/conversationResponse';
+import { ConversationType } from '@/entity/Conversation';
+import { Role } from '@/entity/ConversationParticipant';
 
 class ConversationController {
     // [GET] /conversations/friends/:friendId
@@ -28,18 +32,19 @@ class ConversationController {
     async createConversation(req: Request, res: Response): Promise<any> {
         const { id } = req.userToken as CustomJwtPayload;
         const { type, name, avatar, participants } = req.body;
-        const { io } = req as IoRequest;
 
         const newConversation = await conversationService.createConversation({
             type,
             name,
             avatar,
-            participants: [...participants, { userId: id, role: null }],
+            participants: [
+                ...participants.map((p: string) => ({
+                    userId: p,
+                    role: null,
+                })),
+                { userId: id, role: type === ConversationType.PRIVATE ? null : Role.ADMIN },
+            ],
         });
-
-        // participants.map((participant:string) => {
-        //     io.to(`user-${participant}`).emit('newConversation', {newConversationId})
-        // })
 
         return res.status(httpStatusCode.CREATED).json(newConversation);
     }
@@ -49,6 +54,15 @@ class ConversationController {
         const { id, firstName, lastName } = req.userToken as CustomJwtPayload;
         const { conversationId, content, type, image } = req.body;
         const { io } = req as IoRequest;
+
+        const conversation = await conversationService.getConversationById(conversationId);
+
+        if (!conversation) {
+            throw new ApiError(
+                conversationResponse.CONVERSATION_NOT_FOUND.status,
+                conversationResponse.CONVERSATION_NOT_FOUND.message,
+            );
+        }
 
         const newMessage = await conversationService.createMessage({
             senderId: id,
@@ -63,15 +77,19 @@ class ConversationController {
         participants.forEach((participant) => {
             io.to(`user-${participant.userId}`).emit('newMessage', {
                 messageId: newMessage.id,
+                conversationType: conversation.type,
+                conversationName: conversation.name,
+                conversationAvatar: conversation.avatar,
                 conversationId,
-                content: newMessage.content,
-                messageType: newMessage.messageType,
+                content,
+                messageType: type,
                 sender: {
                     userId: id,
                     firstName,
                     lastName,
                     avatar: sender?.avatar,
                 },
+                lastUpdated: newMessage.createdAt,
             });
         });
         return res.status(httpStatusCode.CREATED).json();
@@ -84,6 +102,49 @@ class ConversationController {
         const messages = await conversationService.getMessages(conversationId);
 
         return res.status(httpStatusCode.OK).json(messages);
+    }
+
+    // [GET] /conversations/recent
+    async getRecentConversations(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+
+        const recentConversations = await conversationService.getRecentConversations(id);
+
+        const _recentConversations = recentConversations.map((c) => {
+            return {
+                conversationId: c.conversationId,
+                conversationName:
+                    c.conversationType === ConversationType.PRIVATE
+                        ? `${c.friendLastName} ${c.friendFirstName}`
+                        : c.conversationName,
+                conversationType: c.conversationType,
+                conversationAvatar:
+                    c.conversationType === ConversationType.PRIVATE ? c.friendAvatar : c.conversationAvatar,
+                conversationCreatedAt: c.conversationCreatedAt,
+                senderId: c.senderId,
+                senderFirstName: c.senderFirstName,
+                senderLastName: c.senderLastName,
+                senderAvatar: c.senderAvatar,
+                lastMessageId: c.lastMessageId,
+                lastMessageContent: c.lastMessageContent,
+                lastMessageType: c.lastMessageType,
+                lastUpdated: c.lastUpdated,
+                ...(c.conversationType === ConversationType.PRIVATE && {
+                    friendId: c.friendId,
+                }),
+            };
+        });
+
+        return res.status(httpStatusCode.OK).json(_recentConversations);
+    }
+
+    // [GET] /conversations/groups/members/:conversationId
+    async getGroupMembers(req: Request, res: Response): Promise<any> {
+        const { conversationId } = req.params;
+
+        const conversationParticipants = await conversationService.getGroupMembers(conversationId);
+
+        return res.status(httpStatusCode.OK).json(conversationParticipants);
     }
 }
 

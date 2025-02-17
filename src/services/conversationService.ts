@@ -1,14 +1,20 @@
 import { pageSize } from '@/constants';
 import { AppDataSource } from '@/data-source';
 import { Conversation, ConversationType } from '@/entity/Conversation';
+import { ConversationHistory } from '@/entity/ConversationHistory';
 import { ConversationParticipant, Role } from '@/entity/ConversationParticipant';
 import { Message, MessageType } from '@/entity/Message';
 
 const conversationRepository = AppDataSource.getRepository(Conversation);
 const conversationParticipantRepository = AppDataSource.getRepository(ConversationParticipant);
+const conversationHistoryRepository = AppDataSource.getRepository(ConversationHistory);
 const messageRepository = AppDataSource.getRepository(Message);
 
 class ConversationService {
+    async getConversationById(conversationId: string): Promise<Conversation | null> {
+        return conversationRepository.findOneBy({ id: conversationId });
+    }
+
     async getConversationPrivate({
         userId,
         friendId,
@@ -58,9 +64,12 @@ class ConversationService {
     }): Promise<Conversation> {
         const newConversation = await conversationRepository.save({
             type,
-            name,
-            avatar,
+            ...(type === ConversationType.GROUP && {
+                name,
+                avatar,
+            }),
         });
+
         await Promise.all(
             participants.map(async (participant) => {
                 await conversationParticipantRepository.save({
@@ -84,15 +93,26 @@ class ConversationService {
         content: string;
         type: MessageType;
     }): Promise<Message> {
-        return await messageRepository.save({
+        const newMessage = await messageRepository.save({
             senderId,
             conversationId,
             content,
             messageType: type,
         });
+
+        await conversationHistoryRepository.upsert(
+            {
+                userId: senderId,
+                conversationId,
+                lastMessageId: newMessage.id,
+            },
+            ['conversationId'],
+        );
+
+        return newMessage;
     }
 
-    async getMessages(conversationId: string) {
+    async getMessages(conversationId: string): Promise<Message[]> {
         const messages = await messageRepository.find({
             relations: ['sender'],
             where: { conversationId },
@@ -122,6 +142,65 @@ class ConversationService {
                 userId: true,
             },
         });
+    }
+
+    async getRecentConversations(userId: string): Promise<any[]> {
+        return await conversationRepository
+            .createQueryBuilder('conversation')
+            .innerJoin(ConversationParticipant, 'cp1', 'cp1.conversationId = conversation.id')
+            .leftJoin(
+                ConversationParticipant,
+                'otherCp',
+                'otherCp.userId != :userId and conversation.id = otherCp.conversationId AND conversation.type = :privateType',
+                { userId, privateType: ConversationType.PRIVATE },
+            )
+            .leftJoin('otherCp.user', 'friend')
+            .where('cp1.userId = :userId OR conversation.type = :groupType', {
+                userId,
+                groupType: ConversationType.GROUP,
+            })
+            .leftJoinAndSelect('conversation.history', 'history')
+            .leftJoinAndSelect('history.user', 'sender')
+            .leftJoinAndSelect('history.lastMessage', 'lastMessage')
+            .select([
+                'conversation.id as conversationId',
+                'conversation.name as conversationName',
+                'conversation.type as conversationType',
+                'conversation.avatar as conversationAvatar',
+                'conversation.createdAt as conversationCreatedAt',
+                'sender.id as senderId',
+                'sender.firstName as senderFirstName',
+                'sender.lastName as senderLastName',
+                'sender.avatar as senderAvatar',
+                'lastMessage.id as lastMessageId',
+                'lastMessage.content as lastMessageContent',
+                'lastMessage.messageType as lastMessageType',
+                'history.createdAt as lastUpdated',
+                'friend.id as friendId',
+                'friend.firstName as friendFirstName',
+                'friend.lastName as friendLastName',
+                'friend.avatar as friendAvatar',
+            ])
+            .orderBy('COALESCE(history.updatedAt, conversation.createdAt)', 'DESC')
+            .groupBy('history.id')
+            .getRawMany();
+    }
+
+    async getGroupMembers(conversationId: string): Promise<ConversationParticipant[]> {
+        return await conversationParticipantRepository
+            .createQueryBuilder('cp')
+            .innerJoinAndSelect('cp.user', 'userInfo')
+            .where('cp.conversationId = :conversationId', { conversationId })
+            .select([
+                'cp.role as role',
+                'cp.nickname as nickname',
+                'userInfo.id as userId',
+                'userInfo.firstName as userFirstName',
+                'userInfo.lastName as userLastName',
+                'userInfo.avatar as userAvatar',
+            ])
+            .orderBy('cp.role', 'DESC')
+            .getRawMany();
     }
 }
 

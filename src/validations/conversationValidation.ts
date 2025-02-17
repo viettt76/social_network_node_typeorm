@@ -3,7 +3,6 @@ import Joi from 'joi';
 import validationHandler from '@/utils/validationHandler';
 import { ConversationType } from '@/entity/Conversation';
 import { MessageType } from '@/entity/Message';
-import { Role } from '@/entity/ConversationParticipant';
 
 class ConversationValidation {
     getConversationWithFriend(req: Request, res: Response, next: NextFunction) {
@@ -19,16 +18,7 @@ class ConversationValidation {
             type: Joi.string().valid(...Object.values(ConversationType)),
             name: Joi.string().optional().trim(),
             avatar: Joi.string().uri().optional(),
-            participants: Joi.array()
-                .items(
-                    Joi.object({
-                        userId: Joi.string().uuid(),
-                        role: Joi.string()
-                            .valid(...Object.values(Role))
-                            .allow(null),
-                    }),
-                )
-                .min(1),
+            participants: Joi.array().items(Joi.string().uuid()).min(1),
         });
 
         validationHandler(correctValidation, req.body, res, next);
@@ -57,6 +47,14 @@ class ConversationValidation {
     }
 
     getMessages(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            conversationId: Joi.string().uuid().required(),
+        });
+
+        validationHandler(correctValidation, req.params, res, next);
+    }
+
+    getGroupMembers(req: Request, res: Response, next: NextFunction) {
         const correctValidation = Joi.object({
             conversationId: Joi.string().uuid().required(),
         });
