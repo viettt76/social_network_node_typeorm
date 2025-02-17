@@ -81,7 +81,7 @@ class ConversationController {
                 conversationName: conversation.name,
                 conversationAvatar: conversation.avatar,
                 conversationId,
-                content,
+                content: newMessage.content,
                 messageType: type,
                 sender: {
                     userId: id,
