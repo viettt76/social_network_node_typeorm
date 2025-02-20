@@ -4,11 +4,13 @@ import { Conversation, ConversationType } from '@/entity/Conversation';
 import { ConversationHistory } from '@/entity/ConversationHistory';
 import { ConversationParticipant, Role } from '@/entity/ConversationParticipant';
 import { Message, MessageType } from '@/entity/Message';
+import { MessageReaction, MessageReactionType } from '@/entity/MessageReaction';
 
 const conversationRepository = AppDataSource.getRepository(Conversation);
 const conversationParticipantRepository = AppDataSource.getRepository(ConversationParticipant);
 const conversationHistoryRepository = AppDataSource.getRepository(ConversationHistory);
 const messageRepository = AppDataSource.getRepository(Message);
+const messageReactionRepository = AppDataSource.getRepository(MessageReaction);
 
 class ConversationService {
     async getConversationById(conversationId: string): Promise<Conversation | null> {
@@ -112,7 +114,7 @@ class ConversationService {
         return newMessage;
     }
 
-    async getMessages(conversationId: string): Promise<Message[]> {
+    async getMessages({ conversationId, userId }: { conversationId: string; userId: string }): Promise<any[]> {
         const messages = await messageRepository.find({
             relations: ['sender'],
             where: { conversationId },
@@ -132,7 +134,32 @@ class ConversationService {
                 createdAt: 'DESC',
             },
         });
-        return messages.reverse();
+        messages.reverse();
+
+        const result = await Promise.all(
+            messages.map(async (m) => {
+                const reactions = await messageReactionRepository.find({
+                    relations: ['user'],
+                    where: { messageId: m.id },
+                    select: {
+                        id: true,
+                        reactionType: true,
+                        user: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            avatar: true,
+                        },
+                    },
+                });
+                return {
+                    ...m,
+                    reactions,
+                    currentReaction: reactions.find((r) => r.user.id === userId)?.reactionType,
+                };
+            }),
+        );
+        return result;
     }
 
     async getParticipants(conversationId: string): Promise<ConversationParticipant[]> {
@@ -201,6 +228,32 @@ class ConversationService {
             ])
             .orderBy('cp.role', 'DESC')
             .getRawMany();
+    }
+
+    async upsertMessageReaction({
+        messageId,
+        userId,
+        reactionType,
+    }: {
+        messageId: string;
+        userId: string;
+        reactionType: MessageReactionType;
+    }): Promise<void> {
+        await messageReactionRepository.upsert(
+            {
+                messageId,
+                userId,
+                reactionType,
+            },
+            ['messageId', 'userId'],
+        );
+    }
+
+    async deleteMessageReaction({ messageId, userId }: { messageId: string; userId: string }): Promise<void> {
+        await messageReactionRepository.delete({
+            messageId,
+            userId,
+        });
     }
 }
 

@@ -97,9 +97,10 @@ class ConversationController {
 
     // [GET] /conversations/messages/:conversationId
     async getMessages(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
         const { conversationId } = req.params;
 
-        const messages = await conversationService.getMessages(conversationId);
+        const messages = await conversationService.getMessages({ conversationId, userId: id });
 
         return res.status(httpStatusCode.OK).json(messages);
     }
@@ -145,6 +146,53 @@ class ConversationController {
         const conversationParticipants = await conversationService.getGroupMembers(conversationId);
 
         return res.status(httpStatusCode.OK).json(conversationParticipants);
+    }
+
+    // [PUT] /conversations/reactions/:messageId
+    async reactToMessage(req: Request, res: Response): Promise<any> {
+        const { id, firstName, lastName } = req.userToken as CustomJwtPayload;
+        const { messageId } = req.params;
+        const { conversationId, reactionType } = req.body;
+        const { io } = req as IoRequest;
+
+        const participants = await conversationService.getParticipants(conversationId);
+
+        if (!reactionType) {
+            await conversationService.deleteMessageReaction({
+                messageId,
+                userId: id,
+            });
+
+            participants.forEach((participant) => {
+                io.to(`user-${participant.userId}`).emit('removeReactToMessage', {
+                    messageId,
+                    userId: id,
+                });
+            });
+        } else {
+            await conversationService.upsertMessageReaction({
+                messageId,
+                userId: id,
+                reactionType,
+            });
+
+            const sender = await userService.getUserFields({ userId: id, fields: ['avatar'] });
+
+            participants.forEach((participant) => {
+                io.to(`user-${participant.userId}`).emit('reactToMessage', {
+                    messageId,
+                    reactionType,
+                    sender: {
+                        userId: id,
+                        firstName,
+                        lastName,
+                        avatar: sender?.avatar,
+                    },
+                });
+            });
+        }
+
+        return res.status(httpStatusCode.OK).json();
     }
 }
 
