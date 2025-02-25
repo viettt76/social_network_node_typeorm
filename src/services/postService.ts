@@ -40,7 +40,7 @@ class PostService {
         content?: string;
         images?: string[];
         visibilityType?: PostVisibility;
-    }): Promise<void> {
+    }): Promise<Post> {
         const { posterId, content, images, visibilityType } = postData;
         const newPost = await postRepository.save({
             posterId,
@@ -58,6 +58,8 @@ class PostService {
                 }),
             );
         }
+
+        return newPost;
     }
 
     async getPosts({ userId, page }: { userId: string; page: number }): Promise<any[]> {
@@ -113,6 +115,88 @@ class PostService {
 
                 return `(post.posterId IN (${subQuery1}) OR post.posterId IN (${subQuery2}))`;
             })
+            .andWhere('post.status != :postStatus', { postStatus: PostStatus.INVALID })
+            .offset((page - 1) * pageSize.posts)
+            .limit(pageSize.posts)
+            .groupBy('post.id')
+            .orderBy('post.createdAt', 'DESC')
+            .getRawMany();
+
+        const result = await Promise.all(
+            posts.map(async (post) => {
+                const reactions = await postReactionRepository.find({
+                    relations: ['user'],
+                    where: { postId: post.postId },
+                    select: {
+                        id: true,
+                        reactionType: true,
+                        user: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            avatar: true,
+                        },
+                    },
+                });
+                return {
+                    postId: post.postId,
+                    visibilityType: post.visibilityType,
+                    content: post.content,
+                    createdAt: post.createdAt,
+                    posterInfo: {
+                        userId: post.posterId,
+                        firstName: post.posterFirstName,
+                        lastName: post.posterLastName,
+                        avatar: post.posterAvatar,
+                    },
+                    currentReactionType: post.currentReactionType,
+                    commentsCount: Number(post.commentsCount),
+                    reactions,
+                    images: JSON.parse(post.images)[0]?.id === null ? [] : JSON.parse(post.images),
+                };
+            }),
+        );
+
+        return result;
+    }
+
+    async getMyPosts({ userId, page }: { userId: string; page: number }): Promise<any[]> {
+        const posts = await postRepository
+            .createQueryBuilder('post')
+            .leftJoinAndSelect(ImageOfPost, 'image', 'image.postId = post.id')
+            .innerJoin(User, 'poster', 'poster.id = post.poster')
+            .leftJoin(
+                (qb) =>
+                    qb
+                        .from(Comment, 'c')
+                        .select('c.postId', 'postId')
+                        .addSelect('COUNT(*)', 'totalComments')
+                        .groupBy('c.postId'),
+                'commentCount',
+                'commentCount.postId = post.id',
+            )
+            .select([
+                'post.id as postId',
+                'post.posterId as posterId',
+                'poster.firstName as posterFirstName',
+                'poster.lastName as posterLastName',
+                'poster.avatar as posterAvatar',
+                'post.visibilityType as visibilityType',
+                'post.content as content',
+                'post.createdAt as createdAt',
+                "CONCAT('[', GROUP_CONCAT(JSON_OBJECT('id', image.id, 'imageUrl', image.imageUrl)), ']') as images",
+            ])
+            .addSelect((qb) => {
+                return qb
+                    .subQuery()
+                    .from(PostReaction, 'pr')
+                    .select('pr.reactionType')
+                    .where('pr.userId = :userId AND pr.postId = post.id', {
+                        userId,
+                    });
+            }, 'currentReactionType')
+            .addSelect('COALESCE(commentCount.totalComments, 0)', 'commentsCount')
+            .where('post.posterId = :userId', { userId })
             .andWhere('post.status != :postStatus', { postStatus: PostStatus.INVALID })
             .offset((page - 1) * pageSize.posts)
             .limit(pageSize.posts)

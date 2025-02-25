@@ -114,26 +114,34 @@ class ConversationService {
         return newMessage;
     }
 
-    async getMessages({ conversationId, userId }: { conversationId: string; userId: string }): Promise<any[]> {
-        const messages = await messageRepository.find({
-            relations: ['sender'],
-            where: { conversationId },
-            select: {
-                id: true,
-                conversationId: true,
-                content: true,
-                messageType: true,
-                sender: {
-                    id: true,
-                    firstName: true,
-                    lastName: true,
-                    avatar: true,
-                },
-            },
-            order: {
-                createdAt: 'DESC',
-            },
-        });
+    async getMessages({
+        conversationId,
+        userId,
+        page,
+    }: {
+        conversationId: string;
+        userId: string;
+        page: number;
+    }): Promise<any[]> {
+        const messages = await messageRepository
+            .createQueryBuilder('message')
+            .leftJoinAndSelect('message.sender', 'sender')
+            .where('message.conversationId = :conversationId', { conversationId })
+            .select([
+                'message.id as id',
+                'message.conversationId as conversationId',
+                'message.content as content',
+                'message.messageType as messageType',
+                'sender.id as senderId',
+                'sender.firstName as senderFirstName',
+                'sender.lastName as senderLastName',
+                'sender.avatar as senderAvatar',
+            ])
+            .orderBy('message.createdAt', 'DESC')
+            .limit(pageSize.messages)
+            .offset((page - 1) * pageSize.messages)
+            .getRawMany();
+
         messages.reverse();
 
         const result = await Promise.all(
@@ -153,7 +161,16 @@ class ConversationService {
                     },
                 });
                 return {
-                    ...m,
+                    id: m.id,
+                    conversationId: m.conversationId,
+                    content: m.content,
+                    messageType: m.messageType,
+                    sender: {
+                        id: m.senderId,
+                        firstName: m.senderFirstName,
+                        lastName: m.senderLastName,
+                        avatar: m.senderAvatar,
+                    },
                     reactions,
                     currentReaction: reactions.find((r) => r.user.id === userId)?.reactionType,
                 };

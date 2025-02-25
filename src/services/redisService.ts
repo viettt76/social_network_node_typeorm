@@ -31,11 +31,6 @@ export const removeOnlineFriends = async (userId: string): Promise<void> => {
 
 export const getOnlineFriendsFromRedis = async (userId: string): Promise<string[]> => {
     const exists = await redisClient.exists(`friends:${userId}`);
-
-    if (exists) {
-        return await redisClient.sMembers(`friends:${userId}`);
-    } else {
-        const friends = await relationshipService.getFriends(userId);
-        return friends.map((friend) => friend.id);
-    }
+    if (!exists) return [];
+    return await redisClient.sInter([`friends:${userId}`, `online_users`]);
 };

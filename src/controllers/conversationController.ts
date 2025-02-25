@@ -99,8 +99,9 @@ class ConversationController {
     async getMessages(req: Request, res: Response): Promise<any> {
         const { id } = req.userToken as CustomJwtPayload;
         const { conversationId } = req.params;
+        const { page } = req.query;
 
-        const messages = await conversationService.getMessages({ conversationId, userId: id });
+        const messages = await conversationService.getMessages({ conversationId, userId: id, page: Number(page) });
 
         return res.status(httpStatusCode.OK).json(messages);
     }

@@ -50,9 +50,10 @@ class ConversationValidation {
     getMessages(req: Request, res: Response, next: NextFunction) {
         const correctValidation = Joi.object({
             conversationId: Joi.string().uuid().required(),
+            page: Joi.number().min(1),
         });
 
-        validationHandler(correctValidation, req.params, res, next);
+        validationHandler(correctValidation, { ...req.params, ...req.query }, res, next);
     }
 
     getGroupMembers(req: Request, res: Response, next: NextFunction) {

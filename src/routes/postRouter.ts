@@ -10,7 +10,8 @@ const postRouter = (io: Server) => {
     router.use(ioMiddleware(io));
 
     router.post('/', postValidation.createPost, postController.createPost);
-    router.get('/', postController.getPosts);
+    router.get('/', postValidation.getPosts, postController.getPosts);
+    router.get('/me', postValidation.getMyPosts, postController.getMyPosts);
     router.get('/reactionTypes', postController.getReactionTypes);
     router.put('/reactions/:postId', postValidation.reactToPost, postController.reactToPost);
     router.post('/comments', postValidation.sendComment, postController.sendComment);

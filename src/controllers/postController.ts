@@ -9,10 +9,28 @@ import { getOnlineFriendsFromRedis } from '@/services/redisService';
 class PostController {
     // [POST] /posts
     async createPost(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as CustomJwtPayload;
+        const { id, firstName, lastName } = req.userToken as CustomJwtPayload;
         const { content, images } = req.body;
+        const { io } = req as IoRequest;
 
-        await postService.createPost({ posterId: id, content, images });
+        const newPost = await postService.createPost({ posterId: id, content, images });
+
+        const creator = await userService.getUserFields({ userId: id, fields: ['avatar'] });
+
+        const friendIds = await getOnlineFriendsFromRedis(id);
+        friendIds.forEach((friendId) => {
+            io.to(`user-${friendId}`).emit('newPost', {
+                postId: newPost.id,
+                creatorId: id,
+                creatorFirstName: firstName,
+                creatorLastName: lastName,
+                creatorAvatar: creator?.avatar,
+                content,
+                images,
+                createdAt: newPost.createdAt,
+            });
+        });
+
         return res.status(httpStatusCode.CREATED).json();
     }
 
@@ -21,6 +39,15 @@ class PostController {
         const { id } = req.userToken as CustomJwtPayload;
         const { page } = req.query;
         const posts = await postService.getPosts({ userId: id, page: Number(page) });
+
+        return res.status(httpStatusCode.OK).json(posts);
+    }
+
+    // [GET] /posts/me
+    async getMyPosts(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+        const { page } = req.query;
+        const posts = await postService.getMyPosts({ userId: id, page: Number(page) });
 
         return res.status(httpStatusCode.OK).json(posts);
     }

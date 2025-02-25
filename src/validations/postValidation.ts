@@ -4,14 +4,6 @@ import validationHandler from '@/utils/validationHandler';
 import { PostReactionType } from '@/entity/PostReaction';
 
 class PostValidation {
-    getPosts(req: Request, res: Response, next: NextFunction) {
-        const correctValidation = Joi.object({
-            page: Joi.number().min(1),
-        });
-
-        validationHandler(correctValidation, req.query, res, next);
-    }
-
     createPost(req: Request, res: Response, next: NextFunction) {
         const correctValidation = Joi.object({
             content: Joi.string().allow('').trim(),
@@ -32,6 +24,22 @@ class PostValidation {
         });
 
         validationHandler(correctValidation, req.body, res, next);
+    }
+
+    getPosts(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            page: Joi.number().min(1),
+        });
+
+        validationHandler(correctValidation, req.query, res, next);
+    }
+
+    getMyPosts(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            page: Joi.number().min(1),
+        });
+
+        validationHandler(correctValidation, req.query, res, next);
     }
 
     reactToPost(req: Request, res: Response, next: NextFunction) {
