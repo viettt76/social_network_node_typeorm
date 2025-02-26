@@ -7,6 +7,7 @@ import postRouter from './postRouter';
 import relationshipRouter from './relationshipRouter';
 import notificationRouter from './notificationRouter';
 import conversationRouter from './conversationRouter';
+import movieRouter from './movieRouter';
 
 const routes = (app: Application, io: Server) => {
     app.use('/auth', authRouter);
@@ -15,6 +16,7 @@ const routes = (app: Application, io: Server) => {
     app.use('/posts', postRouter(io));
     app.use('/relationships', relationshipRouter(io));
     app.use('/conversations', conversationRouter(io));
+    app.use('/movies', movieRouter);
 };
 
 export default routes;
