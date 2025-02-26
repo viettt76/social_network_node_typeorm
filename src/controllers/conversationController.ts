@@ -30,8 +30,9 @@ class ConversationController {
 
     // [POST] /conversations
     async createConversation(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as CustomJwtPayload;
+        const { id, firstName, lastName } = req.userToken as CustomJwtPayload;
         const { type, name, avatar, participants } = req.body;
+        const { io } = req as IoRequest;
 
         const newConversation = await conversationService.createConversation({
             type,
@@ -45,6 +46,26 @@ class ConversationController {
                 { userId: id, role: type === ConversationType.PRIVATE ? null : Role.ADMIN },
             ],
         });
+
+        if (newConversation.type === ConversationType.GROUP) {
+            const creatorInfo = await userService.getUserFields({ userId: id, fields: ['avatar'] });
+            const newConversationGroupData = {
+                conversationId: newConversation.id,
+                conversationName: name,
+                conversationAvatar: avatar,
+                creator: {
+                    userId: id,
+                    firstName,
+                    lastName,
+                    avatar: creatorInfo?.avatar,
+                },
+                lastUpdated: newConversation.createdAt,
+            };
+            participants.map((p: string) => {
+                io.to(`user-${p}`).emit('newConversationGroup', newConversationGroupData);
+            });
+            io.to(`user-${id}`).emit('newConversationGroup', newConversationGroupData);
+        }
 
         return res.status(httpStatusCode.CREATED).json(newConversation);
     }
@@ -74,24 +95,41 @@ class ConversationController {
         const sender = await userService.getUserFields({ userId: id, fields: ['avatar'] });
 
         const participants = await conversationService.getParticipants(conversationId);
+
+        const baseMessage: any = {
+            messageId: newMessage.id,
+            conversationType: conversation.type,
+            conversationName: conversation.name,
+            conversationAvatar: conversation.avatar,
+            conversationId,
+            content: newMessage.content,
+            messageType: type,
+            sender: {
+                userId: id,
+                firstName,
+                lastName,
+                avatar: sender?.avatar,
+            },
+            lastUpdated: newMessage.createdAt,
+        };
+
+        if (conversation.type === ConversationType.PRIVATE) {
+            const friend = participants.find((p) => p.userId !== id);
+
+            if (friend) {
+                baseMessage.friend = {
+                    userId: friend.user.id,
+                    firstName: friend.user.firstName,
+                    lastName: friend.user.lastName,
+                    avatar: friend.user.avatar,
+                };
+            }
+        }
+
         participants.forEach((participant) => {
-            io.to(`user-${participant.userId}`).emit('newMessage', {
-                messageId: newMessage.id,
-                conversationType: conversation.type,
-                conversationName: conversation.name,
-                conversationAvatar: conversation.avatar,
-                conversationId,
-                content: newMessage.content,
-                messageType: type,
-                sender: {
-                    userId: id,
-                    firstName,
-                    lastName,
-                    avatar: sender?.avatar,
-                },
-                lastUpdated: newMessage.createdAt,
-            });
+            io.to(`user-${participant.userId}`).emit('newMessage', baseMessage);
         });
+
         return res.status(httpStatusCode.CREATED).json();
     }
 

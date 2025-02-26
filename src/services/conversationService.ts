@@ -181,9 +181,15 @@ class ConversationService {
 
     async getParticipants(conversationId: string): Promise<ConversationParticipant[]> {
         return await conversationParticipantRepository.find({
+            relations: ['user'],
             where: { conversationId },
             select: {
                 userId: true,
+                user: {
+                    firstName: true,
+                    lastName: true,
+                    avatar: true,
+                },
             },
         });
     }
