@@ -188,7 +188,7 @@ class ConversationService {
         });
     }
 
-    async getRecentConversations(userId: string): Promise<any[]> {
+    async getRecentConversations({ userId, page }: { userId: string; page: number }): Promise<any[]> {
         return await conversationRepository
             .createQueryBuilder('conversation')
             .innerJoin(ConversationParticipant, 'cp1', 'cp1.conversationId = conversation.id')
@@ -225,12 +225,20 @@ class ConversationService {
                 'friend.lastName as friendLastName',
                 'friend.avatar as friendAvatar',
             ])
+            .offset((page - 1) * pageSize.recentConversations)
+            .limit(pageSize.recentConversations)
             .orderBy('COALESCE(history.updatedAt, conversation.createdAt)', 'DESC')
             .groupBy('history.id')
             .getRawMany();
     }
 
-    async getGroupMembers(conversationId: string): Promise<ConversationParticipant[]> {
+    async getGroupMembers({
+        conversationId,
+        page,
+    }: {
+        conversationId: string;
+        page: number;
+    }): Promise<ConversationParticipant[]> {
         return await conversationParticipantRepository
             .createQueryBuilder('cp')
             .innerJoinAndSelect('cp.user', 'userInfo')
@@ -243,6 +251,8 @@ class ConversationService {
                 'userInfo.lastName as userLastName',
                 'userInfo.avatar as userAvatar',
             ])
+            .limit(pageSize.groupConversationMembers)
+            .offset((page - 1) * pageSize.groupConversationMembers)
             .orderBy('cp.role', 'DESC')
             .getRawMany();
     }

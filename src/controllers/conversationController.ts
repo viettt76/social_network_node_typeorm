@@ -109,8 +109,12 @@ class ConversationController {
     // [GET] /conversations/recent
     async getRecentConversations(req: Request, res: Response): Promise<any> {
         const { id } = req.userToken as CustomJwtPayload;
+        const { page } = req.query;
 
-        const recentConversations = await conversationService.getRecentConversations(id);
+        const recentConversations = await conversationService.getRecentConversations({
+            userId: id,
+            page: Number(page),
+        });
 
         const _recentConversations = recentConversations.map((c) => {
             return {
@@ -143,8 +147,12 @@ class ConversationController {
     // [GET] /conversations/groups/members/:conversationId
     async getGroupMembers(req: Request, res: Response): Promise<any> {
         const { conversationId } = req.params;
+        const { page } = req.query;
 
-        const conversationParticipants = await conversationService.getGroupMembers(conversationId);
+        const conversationParticipants = await conversationService.getGroupMembers({
+            conversationId,
+            page: Number(page),
+        });
 
         return res.status(httpStatusCode.OK).json(conversationParticipants);
     }
