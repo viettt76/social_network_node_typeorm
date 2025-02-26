@@ -199,10 +199,7 @@ class ConversationService {
                 { userId, privateType: ConversationType.PRIVATE },
             )
             .leftJoin('otherCp.user', 'friend')
-            .where('cp1.userId = :userId OR conversation.type = :groupType', {
-                userId,
-                groupType: ConversationType.GROUP,
-            })
+            .where('cp1.userId = :userId', { userId })
             .leftJoinAndSelect('conversation.history', 'history')
             .leftJoinAndSelect('history.user', 'sender')
             .leftJoinAndSelect('history.lastMessage', 'lastMessage')
