@@ -84,5 +84,23 @@ class ConversationValidation {
 
         validationHandler(correctValidation, { ...req.params, ...req.body }, res, next);
     }
+
+    addGroupMembers(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            conversationId: Joi.string().uuid().required(),
+            participants: Joi.array()
+                .items(
+                    Joi.object({
+                        userId: Joi.string().uuid(),
+                        firstName: Joi.string().allow(''),
+                        lastName: Joi.string().allow(''),
+                        avatar: Joi.string().uri().allow(null),
+                    }),
+                )
+                .min(1),
+        });
+
+        validationHandler(correctValidation, { ...req.params, ...req.body }, res, next);
+    }
 }
 export const conversationValidation = new ConversationValidation();

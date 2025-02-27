@@ -6,7 +6,7 @@ import { userService } from '@/services/userService';
 import ApiError from '@/utils/ApiError';
 import conversationResponse from '@/constants/conversationResponse';
 import { ConversationType } from '@/entity/Conversation';
-import { Role } from '@/entity/ConversationParticipant';
+import { ConversationRole } from '@/entity/ConversationParticipant';
 
 class ConversationController {
     // [GET] /conversations/friends/:friendId
@@ -43,7 +43,7 @@ class ConversationController {
                     userId: p,
                     role: null,
                 })),
-                { userId: id, role: type === ConversationType.PRIVATE ? null : Role.ADMIN },
+                { userId: id, role: type === ConversationType.PRIVATE ? null : ConversationRole.ADMIN },
             ],
         });
 
@@ -240,6 +240,32 @@ class ConversationController {
         }
 
         return res.status(httpStatusCode.OK).json();
+    }
+
+    // [POST] /conversations/members/:conversationId
+    async addGroupMembers(req: Request, res: Response): Promise<any> {
+        const { conversationId } = req.params;
+        const { participants } = req.body;
+        const { io } = req as IoRequest;
+
+        const prevMembers = await conversationService.getParticipants(conversationId);
+
+        const participantIds = participants.map((p: any) => p.userId);
+        await conversationService.addGroupMembers({ conversationId, participantIds });
+        participantIds.map((p: any) => {
+            io.to(`user-${p.userId}`).emit('addedToGroup');
+        });
+        prevMembers.map((m) => {
+            io.to(`user-${m.userId}`).emit(
+                'moreMemberToGroup',
+                participants.map((p: any) => ({
+                    ...p,
+                    role: ConversationRole.MEMBER,
+                })),
+            );
+        });
+
+        return res.status(httpStatusCode.CREATED).json();
     }
 }
 

@@ -25,6 +25,11 @@ const conversationRouter = (io: Server) => {
         conversationController.getGroupMembers,
     );
     router.put('/reactions/:messageId', conversationValidation.reactToMessage, conversationController.reactToMessage);
+    router.post(
+        '/members/:conversationId',
+        conversationValidation.addGroupMembers,
+        conversationController.addGroupMembers,
+    );
 
     return router;
 };

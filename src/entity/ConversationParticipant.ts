@@ -3,7 +3,7 @@ import { Base } from './Base';
 import { Conversation } from './Conversation';
 import { User } from './User';
 
-export enum Role {
+export enum ConversationRole {
     MEMBER = 'MEMBER',
     ADMIN = 'ADMIN',
 }
@@ -20,8 +20,8 @@ export class ConversationParticipant extends Base {
     @Column({ nullable: true })
     nickname?: string;
 
-    @Column({ type: 'enum', enum: Role, default: null })
-    role?: Role;
+    @Column({ type: 'enum', enum: ConversationRole, default: null })
+    role?: ConversationRole;
 
     @ManyToOne(() => Conversation, (conversation) => conversation.conversationParticipants)
     @JoinColumn({ name: 'conversationId', referencedColumnName: 'id' })

@@ -2,7 +2,7 @@ import { pageSize } from '@/constants';
 import { AppDataSource } from '@/data-source';
 import { Conversation, ConversationType } from '@/entity/Conversation';
 import { ConversationHistory } from '@/entity/ConversationHistory';
-import { ConversationParticipant, Role } from '@/entity/ConversationParticipant';
+import { ConversationParticipant, ConversationRole } from '@/entity/ConversationParticipant';
 import { Message, MessageType } from '@/entity/Message';
 import { MessageReaction, MessageReactionType } from '@/entity/MessageReaction';
 
@@ -61,7 +61,7 @@ class ConversationService {
         avatar: string;
         participants: {
             userId: string;
-            role: Role;
+            role: ConversationRole;
         }[];
     }): Promise<Conversation> {
         const newConversation = await conversationRepository.save({
@@ -132,6 +132,7 @@ class ConversationService {
                 'message.conversationId as conversationId',
                 'message.content as content',
                 'message.messageType as messageType',
+                'message.createdAt as createdAt',
                 'sender.id as senderId',
                 'sender.firstName as senderFirstName',
                 'sender.lastName as senderLastName',
@@ -165,6 +166,7 @@ class ConversationService {
                     conversationId: m.conversationId,
                     content: m.content,
                     messageType: m.messageType,
+                    createdAt: m.createdAt,
                     sender: {
                         id: m.senderId,
                         firstName: m.senderFirstName,
@@ -284,6 +286,22 @@ class ConversationService {
             messageId,
             userId,
         });
+    }
+
+    async addGroupMembers({
+        conversationId,
+        participantIds,
+    }: {
+        conversationId: string;
+        participantIds: string[];
+    }): Promise<void> {
+        await conversationParticipantRepository.insert(
+            participantIds.map((p) => ({
+                userId: p,
+                conversationId,
+                role: ConversationRole.MEMBER,
+            })),
+        );
     }
 }
 
