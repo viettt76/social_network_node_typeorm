@@ -31,6 +31,17 @@ class PostController {
             });
         });
 
+        io.to(`user-${id}`).emit('newPost', {
+            postId: newPost.id,
+            creatorId: id,
+            creatorFirstName: firstName,
+            creatorLastName: lastName,
+            creatorAvatar: creator?.avatar,
+            content,
+            images,
+            createdAt: newPost.createdAt,
+        });
+
         return res.status(httpStatusCode.CREATED).json();
     }
 

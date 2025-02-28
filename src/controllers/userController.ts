@@ -17,12 +17,13 @@ class UserController {
                 lastName: user.lastName,
                 firstName: user.firstName,
                 birthday: user.birthday,
-                role: user.role,
-                homeTown: user.homeTown,
+                gender: user.gender,
+                hometown: user.hometown,
                 school: user.school,
                 workplace: user.workplace,
                 avatar: user.avatar,
                 isPrivate: user.isPrivate,
+                role: user.role,
             });
         } else {
             res.clearCookie('token');
@@ -31,6 +32,19 @@ class UserController {
                 message: userResponse.USER_NOT_FOUND.message,
             });
         }
+    }
+
+    // [PUT] /users/information
+    async changeInformation(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+        const { firstName, lastName, birthday, gender, hometown, school, workplace, avatar, isPrivate } = req.body;
+
+        await userService.changeInformation({
+            userId: id,
+            userInfo: { firstName, lastName, birthday, gender, hometown, school, workplace, avatar, isPrivate },
+        });
+
+        return res.status(httpStatusCode.NO_CONTENT).json();
     }
 }
 

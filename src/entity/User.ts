@@ -44,7 +44,7 @@ export class User extends Base {
     gender!: Gender;
 
     @Column({ nullable: true })
-    homeTown?: string;
+    hometown?: string;
 
     @Column({ nullable: true })
     school?: string;

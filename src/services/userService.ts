@@ -1,5 +1,5 @@
 import { AppDataSource } from '@/data-source';
-import { User } from '@/entity/User';
+import { Gender, User } from '@/entity/User';
 
 const userRepository = AppDataSource.getRepository(User);
 
@@ -16,6 +16,41 @@ class UserService {
             where: { id: userId },
             select: obj,
         });
+    }
+
+    async changeInformation({
+        userId,
+        userInfo,
+    }: {
+        userId: string;
+        userInfo: {
+            firstName?: string;
+            lastName?: string;
+            birthday?: Date;
+            gender?: Gender;
+            hometown?: string;
+            school?: string;
+            workplace?: string;
+            avatar?: string;
+            isPrivate?: boolean;
+        };
+    }): Promise<void> {
+        await userRepository.update(
+            {
+                id: userId,
+            },
+            {
+                firstName: userInfo.firstName,
+                lastName: userInfo.lastName,
+                birthday: userInfo.birthday,
+                gender: userInfo.gender,
+                hometown: userInfo.hometown,
+                school: userInfo.school,
+                workplace: userInfo.workplace,
+                avatar: userInfo.avatar,
+                isPrivate: userInfo.isPrivate,
+            },
+        );
     }
 }
 
