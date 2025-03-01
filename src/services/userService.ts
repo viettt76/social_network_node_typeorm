@@ -1,7 +1,9 @@
 import { AppDataSource } from '@/data-source';
+import { ImageOfPost } from '@/entity/ImageOfPost';
 import { Gender, User } from '@/entity/User';
 
 const userRepository = AppDataSource.getRepository(User);
+const imageOfPostRepository = AppDataSource.getRepository(ImageOfPost);
 
 class UserService {
     async findUserById(id: string): Promise<User | null> {
@@ -51,6 +53,16 @@ class UserService {
                 isPrivate: userInfo.isPrivate,
             },
         );
+    }
+
+    async getUserImages(userId: string): Promise<any> {
+        return await imageOfPostRepository
+            .createQueryBuilder('image')
+            .select(['image.postId as postId', 'image.imageUrl as imageUrl'])
+            .innerJoin('image.post', 'post')
+            .where('post.posterId = :userId', { userId })
+            .groupBy('image.imageUrl')
+            .getRawMany();
     }
 }
 

@@ -54,11 +54,11 @@ class PostController {
         return res.status(httpStatusCode.OK).json(posts);
     }
 
-    // [GET] /posts/me
-    async getMyPosts(req: Request, res: Response): Promise<any> {
-        const { id } = req.userToken as CustomJwtPayload;
-        const { page } = req.query;
-        const posts = await postService.getMyPosts({ userId: id, page: Number(page) });
+    // [GET] /posts/user/:userId
+    async getPostsByUserId(req: Request, res: Response): Promise<any> {
+        const { userId, page } = req.query as Record<string, string>;
+
+        const posts = await postService.getPostsByUserId({ userId, page: Number(page) });
 
         return res.status(httpStatusCode.OK).json(posts);
     }

@@ -34,8 +34,9 @@ class PostValidation {
         validationHandler(correctValidation, req.query, res, next);
     }
 
-    getMyPosts(req: Request, res: Response, next: NextFunction) {
+    getPostsByUserId(req: Request, res: Response, next: NextFunction) {
         const correctValidation = Joi.object({
+            userId: Joi.string().uuid().required(),
             page: Joi.number().min(1),
         });
 

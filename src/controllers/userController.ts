@@ -34,6 +34,35 @@ class UserController {
         }
     }
 
+    // [GET] /users/information/:userId
+    async getUserInfo(req: Request, res: Response): Promise<any> {
+        const { userId } = req.params;
+
+        const user = await userService.findUserById(userId);
+
+        if (user) {
+            return res.status(httpStatusCode.OK).json({
+                lastName: user.lastName,
+                firstName: user.firstName,
+                avatar: user.avatar,
+                isPrivate: user.isPrivate,
+                ...(!user.isPrivate && {
+                    birthday: user.birthday,
+                    gender: user.gender,
+                    hometown: user.hometown,
+                    school: user.school,
+                    workplace: user.workplace,
+                }),
+            });
+        } else {
+            res.clearCookie('token');
+            res.clearCookie('refreshToken');
+            return res.status(userResponse.USER_NOT_FOUND.status).json({
+                message: userResponse.USER_NOT_FOUND.message,
+            });
+        }
+    }
+
     // [PUT] /users/information
     async changeInformation(req: Request, res: Response): Promise<any> {
         const { id } = req.userToken as CustomJwtPayload;
@@ -45,6 +74,15 @@ class UserController {
         });
 
         return res.status(httpStatusCode.NO_CONTENT).json();
+    }
+
+    // [GET] /users/images/:userId
+    async getUserImages(req: Request, res: Response): Promise<any> {
+        const { userId } = req.params;
+
+        const images = await userService.getUserImages(userId);
+
+        return res.status(httpStatusCode.OK).json(images);
     }
 }
 

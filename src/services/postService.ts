@@ -160,7 +160,7 @@ class PostService {
         return result;
     }
 
-    async getMyPosts({ userId, page }: { userId: string; page: number }): Promise<any[]> {
+    async getPostsByUserId({ userId, page }: { userId: string; page: number }): Promise<any[]> {
         const posts = await postRepository
             .createQueryBuilder('post')
             .leftJoinAndSelect(ImageOfPost, 'image', 'image.postId = post.id')

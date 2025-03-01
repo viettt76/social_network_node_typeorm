@@ -125,8 +125,9 @@ class RelationshipController {
     // [GET] /relationships/friends
     async getFriends(req: Request, res: Response): Promise<any> {
         const { id } = req.userToken as CustomJwtPayload;
+        const { userId } = req.query as Record<string, string>;
 
-        const friends = await relationshipService.getFriends(id);
+        const friends = await relationshipService.getFriends(userId || id);
 
         return res.status(httpStatusCode.OK).json(friends);
     }

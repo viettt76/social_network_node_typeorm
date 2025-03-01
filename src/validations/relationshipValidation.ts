@@ -52,6 +52,14 @@ class RelationshipValidation {
         validationHandler(correctValidation, req.params, res, next);
     }
 
+    getFriends(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            userId: Joi.string().uuid().allow(null),
+        });
+
+        validationHandler(correctValidation, req.query, res, next);
+    }
+
     unfriend(req: Request, res: Response, next: NextFunction) {
         const correctValidation = Joi.object({
             friendId: Joi.string().uuid().required(),
