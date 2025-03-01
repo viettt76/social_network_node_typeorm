@@ -160,7 +160,15 @@ class PostService {
         return result;
     }
 
-    async getPostsByUserId({ userId, page }: { userId: string; page: number }): Promise<any[]> {
+    async getPostsByUserId({
+        currentUserId,
+        userId,
+        page,
+    }: {
+        currentUserId: string;
+        userId: string;
+        page: number;
+    }): Promise<any[]> {
         const posts = await postRepository
             .createQueryBuilder('post')
             .leftJoinAndSelect(ImageOfPost, 'image', 'image.postId = post.id')
@@ -191,8 +199,8 @@ class PostService {
                     .subQuery()
                     .from(PostReaction, 'pr')
                     .select('pr.reactionType')
-                    .where('pr.userId = :userId AND pr.postId = post.id', {
-                        userId,
+                    .where('pr.userId = :currentUserId AND pr.postId = post.id', {
+                        currentUserId,
                     });
             }, 'currentReactionType')
             .addSelect('COALESCE(commentCount.totalComments, 0)', 'commentsCount')

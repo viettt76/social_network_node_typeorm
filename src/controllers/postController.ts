@@ -56,9 +56,10 @@ class PostController {
 
     // [GET] /posts/user/:userId
     async getPostsByUserId(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
         const { userId, page } = req.query as Record<string, string>;
 
-        const posts = await postService.getPostsByUserId({ userId, page: Number(page) });
+        const posts = await postService.getPostsByUserId({ currentUserId: id, userId, page: Number(page) });
 
         return res.status(httpStatusCode.OK).json(posts);
     }
@@ -96,14 +97,21 @@ class PostController {
                 },
             };
 
+            // Send all the online friends of the poster
             onlineFriends.forEach((friendId: string) => {
                 io.to(`user-${friendId}`).emit('reactToPost', { postId, newReaction: _newReaction });
             });
+
+            // If the current user is not on the list of friends of the poster
             if (!onlineFriends.includes(id))
                 io.to(`user-${id}`).emit('reactToPost', { postId, newReaction: _newReaction });
+
+            // If the current user is not the poster
+            if (id !== posterId) io.to(`user-${posterId}`).emit('reactToPost', { postId, newReaction: _newReaction });
         } else if (reactionType) {
             await postService.updatePostReaction({ postReaction, reactionType });
 
+            // Send all the online friends of the poster
             onlineFriends.forEach((friendId: string) => {
                 io.to(`user-${friendId}`).emit('updateReactToPost', {
                     postId,
@@ -111,8 +119,18 @@ class PostController {
                     reactionType,
                 });
             });
+
+            // If the current user is not on the list of friends of the poster
             if (!onlineFriends.includes(id))
                 io.to(`user-${id}`).emit('updateReactToPost', {
+                    postId,
+                    postReactionId: postReaction.id,
+                    reactionType,
+                });
+
+            // If the current user is not the poster
+            if (id !== posterId)
+                io.to(`user-${posterId}`).emit('updateReactToPost', {
                     postId,
                     postReactionId: postReaction.id,
                     reactionType,
@@ -120,14 +138,21 @@ class PostController {
         } else {
             await postService.deletePostReaction(postReaction.id);
 
+            // Send all the online friends of the poster
             onlineFriends.forEach((friendId: string) => {
                 io.to(`user-${friendId}`).emit('deleteReactToPost', {
                     postId,
                     postReactionId: postReaction.id,
                 });
             });
+
+            // If the current user is not on the list of friends of the poster
             if (!onlineFriends.includes(id))
                 io.to(`user-${id}`).emit('deleteReactToPost', { postId, postReactionId: postReaction.id });
+
+            // If the current user is not the poster
+            if (id !== posterId)
+                io.to(`user-${posterId}`).emit('deleteReactToPost', { postId, postReactionId: postReaction.id });
         }
 
         return res.status(httpStatusCode.OK).json();
