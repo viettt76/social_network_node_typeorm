@@ -1,5 +1,5 @@
 import { AppDataSource } from '@/data-source';
-import { FavoriteMovie, MovieType } from '@/entity/FavoriteMovie';
+import { FavoriteMovie, MovieType, MovieSource } from '@/entity/FavoriteMovie';
 
 const favoriteMovieRepository = AppDataSource.getRepository(FavoriteMovie);
 
@@ -11,8 +11,9 @@ class MovieService {
         slug: string;
         thumbUrl: string;
         type: MovieType;
+        source: MovieSource;
     }): Promise<void> {
-        const { userId, movieId, name, slug, thumbUrl, type } = favoriteMovieData;
+        const { userId, movieId, name, slug, thumbUrl, type, source } = favoriteMovieData;
         await favoriteMovieRepository.insert({
             userId,
             movieId,
@@ -20,6 +21,14 @@ class MovieService {
             slug,
             thumbUrl,
             type,
+            source,
+        });
+    }
+
+    async removeFavoriteMovie({ movieId, source }: { movieId: string; source: MovieSource }): Promise<void> {
+        await favoriteMovieRepository.delete({
+            movieId,
+            source,
         });
     }
 
@@ -34,7 +43,25 @@ class MovieService {
                 slug: true,
                 thumbUrl: true,
                 type: true,
+                source: true,
             },
+            order: { createdAt: 'ASC' },
+        });
+    }
+
+    async getFavoriteMovieById({
+        userId,
+        movieId,
+        source,
+    }: {
+        userId: string;
+        movieId: string;
+        source: MovieSource;
+    }): Promise<FavoriteMovie | null> {
+        return favoriteMovieRepository.findOneBy({
+            userId,
+            movieId,
+            source,
         });
     }
 }

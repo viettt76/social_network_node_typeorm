@@ -6,8 +6,13 @@ export enum MovieType {
     TV = 'TV',
 }
 
+export enum MovieSource {
+    OPHIM = 1,
+    KKPHIM = 2,
+}
+
 @Entity({ name: 'favorite_movies' })
-@Unique(['userId', 'movieId'])
+@Unique(['userId', 'movieId', 'source'])
 export class FavoriteMovie extends Base {
     @Column({ type: 'uuid' })
     @Index()
@@ -27,4 +32,7 @@ export class FavoriteMovie extends Base {
 
     @Column({ type: 'enum', enum: MovieType })
     type!: MovieType;
+
+    @Column({ type: 'enum', enum: MovieSource })
+    source!: MovieSource;
 }
