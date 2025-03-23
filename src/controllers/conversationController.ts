@@ -41,7 +41,7 @@ class ConversationController {
             participants: [
                 ...participants.map((p: string) => ({
                     userId: p,
-                    role: null,
+                    role: type === ConversationType.PRIVATE ? null : ConversationRole.MEMBER,
                 })),
                 { userId: id, role: type === ConversationType.PRIVATE ? null : ConversationRole.ADMIN },
             ],

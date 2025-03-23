@@ -242,9 +242,9 @@ class ConversationService {
         page,
     }: {
         conversationId: string;
-        page: number;
+        page?: number;
     }): Promise<ConversationParticipant[]> {
-        return await conversationParticipantRepository
+        const query = conversationParticipantRepository
             .createQueryBuilder('cp')
             .innerJoinAndSelect('cp.user', 'userInfo')
             .where('cp.conversationId = :conversationId', { conversationId })
@@ -256,10 +256,13 @@ class ConversationService {
                 'userInfo.lastName as userLastName',
                 'userInfo.avatar as userAvatar',
             ])
-            .limit(pageSize.groupConversationMembers)
-            .offset((page - 1) * pageSize.groupConversationMembers)
-            .orderBy('cp.role', 'DESC')
-            .getRawMany();
+            .orderBy('cp.role', 'DESC');
+
+        if (page) {
+            query.limit(pageSize.groupConversationMembers).offset((page - 1) * pageSize.groupConversationMembers);
+        }
+
+        return await query.getRawMany();
     }
 
     async upsertMessageReaction({

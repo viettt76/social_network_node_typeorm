@@ -4,6 +4,7 @@ import { verify } from 'jsonwebtoken';
 import postEvent from './postEvent';
 import { addOnlineFriends, addUserOnline, removeUserOnline } from '@/services/redisService';
 import { CustomJwtPayload } from '@/custom';
+import conversationEvent from './conversationEvent';
 
 const events = (io: Server) => {
     io.on('connect', async (socket: Socket) => {
@@ -27,6 +28,7 @@ const events = (io: Server) => {
             await addOnlineFriends(userId);
 
             postEvent(socket);
+            conversationEvent(socket, io, userToken);
 
             socket.on('disconnect', async () => {
                 socket.leave(`user-${userToken.id}`);
