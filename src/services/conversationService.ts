@@ -200,13 +200,20 @@ class ConversationService {
         return await conversationRepository
             .createQueryBuilder('conversation')
             .innerJoin(ConversationParticipant, 'cp1', 'cp1.conversationId = conversation.id')
-            .leftJoin(
+            .innerJoin(
                 ConversationParticipant,
                 'otherCp',
-                'otherCp.userId != :userId and conversation.id = otherCp.conversationId AND conversation.type = :privateType',
+                'otherCp.userId != :userId AND otherCp.conversationId = conversation.id AND conversation.type = :privateType',
                 { userId, privateType: ConversationType.PRIVATE },
             )
-            .leftJoin('otherCp.user', 'friend')
+            // .leftJoin(
+            //     ConversationParticipant,
+            //     'adminCp',
+            //     'adminCp.role = :adminRole AND adminCp.conversationId = conversation.id AND conversation.type = :groupType',
+            //     { adminRole: ConversationRole.ADMIN, groupType: ConversationType.GROUP },
+            // )
+            .innerJoin('otherCp.user', 'friend')
+            // .leftJoin('adminCp.user', 'admin')
             .where('cp1.userId = :userId', { userId })
             .leftJoinAndSelect('conversation.history', 'history')
             .leftJoinAndSelect('history.user', 'sender')
@@ -229,6 +236,10 @@ class ConversationService {
                 'friend.firstName as friendFirstName',
                 'friend.lastName as friendLastName',
                 'friend.avatar as friendAvatar',
+                // 'admin.id as adminId',
+                // 'admin.firstName as adminFirstName',
+                // 'admin.lastName as adminLastName',
+                // 'admin.avatar as adminAvatar',
             ])
             .offset((page - 1) * pageSize.recentConversations)
             .limit(pageSize.recentConversations)

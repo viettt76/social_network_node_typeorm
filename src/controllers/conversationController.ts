@@ -7,6 +7,7 @@ import ApiError from '@/utils/ApiError';
 import conversationResponse from '@/constants/conversationResponse';
 import { ConversationType } from '@/entity/Conversation';
 import { ConversationRole } from '@/entity/ConversationParticipant';
+import { MessageType } from '@/entity/Message';
 
 class ConversationController {
     // [GET] /conversations/friends/:friendId
@@ -45,9 +46,17 @@ class ConversationController {
                 })),
                 { userId: id, role: type === ConversationType.PRIVATE ? null : ConversationRole.ADMIN },
             ],
+            ...(type === ConversationType.PRIVATE ? { creatorId: id } : {}),
         });
 
         if (newConversation.type === ConversationType.GROUP) {
+            const newMessage = await conversationService.createMessage({
+                senderId: id,
+                conversationId: newConversation.id,
+                content: `${lastName} ${firstName} vừa tạo nhóm`,
+                type: MessageType.NOTIFICATION,
+            });
+
             const creatorInfo = await userService.getUserFields({ userId: id, fields: ['avatar'] });
             const newConversationGroupData = {
                 conversationId: newConversation.id,
@@ -60,6 +69,12 @@ class ConversationController {
                     avatar: creatorInfo?.avatar,
                 },
                 lastUpdated: newConversation.createdAt,
+                lastMessage: {
+                    messageId: newMessage.id,
+                    content: newMessage.content,
+                    messageType: newMessage.messageType,
+                    createdAt: newMessage.createdAt,
+                },
             };
             participants.map((p: string) => {
                 io.to(`user-${p}`).emit('newConversationGroup', newConversationGroupData);
@@ -157,13 +172,7 @@ class ConversationController {
         const _recentConversations = recentConversations.map((c) => {
             return {
                 conversationId: c.conversationId,
-                conversationName:
-                    c.conversationType === ConversationType.PRIVATE
-                        ? `${c.friendLastName} ${c.friendFirstName}`
-                        : c.conversationName,
                 conversationType: c.conversationType,
-                conversationAvatar:
-                    c.conversationType === ConversationType.PRIVATE ? c.friendAvatar : c.conversationAvatar,
                 conversationCreatedAt: c.conversationCreatedAt,
                 senderId: c.senderId,
                 senderFirstName: c.senderFirstName,
@@ -173,9 +182,22 @@ class ConversationController {
                 lastMessageContent: c.lastMessageContent,
                 lastMessageType: c.lastMessageType,
                 lastUpdated: c.lastUpdated,
-                ...(c.conversationType === ConversationType.PRIVATE && {
-                    friendId: c.friendId,
-                }),
+                ...(c.conversationType === ConversationType.PRIVATE
+                    ? {
+                          friendId: c.friendId,
+                          conversationName: `${c.friendLastName} ${c.friendFirstName}`,
+                          conversationAvatar: c.friendAvatar,
+                      }
+                    : {
+                          conversationName: c.conversationName,
+                          conversationAvatar: c.conversationAvatar,
+                          adminInfo: {
+                              userId: c.adminId,
+                              firstName: c.adminFirstName,
+                              lastName: c.adminLastName,
+                              avatar: c.adminAvatar,
+                          },
+                      }),
             };
         });
 

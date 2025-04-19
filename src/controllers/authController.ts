@@ -5,8 +5,7 @@ import { authResponse } from '@/constants/authResponse';
 import { httpStatusCode } from '@/constants/httpStatusCode';
 import { authService } from '@/services/authService';
 import ApiError from '@/utils/ApiError';
-
-const saltRounds = 10;
+import { CustomJwtPayload } from '@/custom';
 
 class AuthController {
     // [POST] /auth/signup
@@ -19,8 +18,7 @@ class AuthController {
             throw new ApiError(authResponse.USERNAME_EXIST.status, authResponse.USERNAME_EXIST.message);
         }
 
-        const hashPassword = bcrypt.hashSync(password, saltRounds);
-        await authService.createUser({ firstName, lastName, username, password: hashPassword, gender });
+        await authService.createUser({ firstName, lastName, username, password, gender });
 
         return res.status(httpStatusCode.CREATED).json();
     }
@@ -94,6 +92,39 @@ class AuthController {
         res.clearCookie('token');
         res.clearCookie('refreshToken');
         res.status(httpStatusCode.OK).json();
+    }
+
+    // [PATCH] /auth/password
+    async changePassword(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+        const { oldPassword, newPassword } = req.body;
+
+        await authService.changePassword({ userId: id, oldPassword, newPassword });
+
+        res.clearCookie('token');
+        res.clearCookie('refreshToken');
+        return res.status(httpStatusCode.OK).json();
+    }
+
+    // [DELETE] /auth/account
+    async deleteAccount(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+        const { password } = req.body;
+
+        await authService.deleteAccount({ userId: id, password });
+
+        res.clearCookie('token');
+        res.clearCookie('refreshToken');
+        return res.status(httpStatusCode.NO_CONTENT).json();
+    }
+
+    // [POST] /auth/recover-account
+    async recoverAccount(req: Request, res: Response): Promise<any> {
+        const { username, password } = req.body;
+
+        await authService.recoverAccount({ username, password });
+
+        return res.status(httpStatusCode.OK).json();
     }
 }
 

@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from 'express';
 import { verify, sign, JwtPayload, VerifyErrors } from 'jsonwebtoken';
 
 const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    const nonSecurePaths = ['/auth/users', '/auth/token'];
+    const nonSecurePaths = ['/auth/users', '/auth/token', '/auth/recover-account'];
     if (nonSecurePaths.includes(req.path)) return next();
 
     const jwtAccessSecret = process.env.JWT_ACCESS_SECRET;

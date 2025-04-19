@@ -6,7 +6,7 @@ export const authResponse = {
         message: 'Username already exists',
     },
     ACCOUNT_DELETED: {
-        status: httpStatusCode.GONE,
+        status: httpStatusCode.FORBIDDEN,
         message: 'Your account has been deleted',
     },
     LOGIN_INCORRECT: {
@@ -20,5 +20,17 @@ export const authResponse = {
     INVALID_REFRESH_TOKEN: {
         status: httpStatusCode.UNAUTHORIZED,
         message: 'Invalid refresh token',
+    },
+    USER_NOT_FOUND: {
+        status: httpStatusCode.BAD_REQUEST,
+        message: 'User not found',
+    },
+    CHANGE_PASSWORD_FAIL: {
+        status: httpStatusCode.BAD_REQUEST,
+        message: 'Old password incorrect',
+    },
+    RECOVER_ACCOUNT_PASSWORD_INCORRECT: {
+        status: httpStatusCode.BAD_REQUEST,
+        message: 'Password incorrect',
     },
 };
