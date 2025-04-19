@@ -84,6 +84,16 @@ class UserController {
 
         return res.status(httpStatusCode.OK).json(images);
     }
+
+    // [GET] /users/search
+    async search(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+        const { keyword } = req.query as Record<string, string>;
+
+        const users = await userService.search({ keyword, userId: id });
+
+        return res.status(httpStatusCode.OK).json(users);
+    }
 }
 
 export const userController = new UserController();

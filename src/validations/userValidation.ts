@@ -35,5 +35,13 @@ class UserValidation {
 
         validationHandler(correctValidation, req.params, res, next);
     }
+
+    search(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            keyword: Joi.string().min(1),
+        });
+
+        validationHandler(correctValidation, req.query, res, next);
+    }
 }
 export const userValidation = new UserValidation();

@@ -64,6 +64,32 @@ class UserService {
             .groupBy('image.imageUrl')
             .getRawMany();
     }
+
+    async search({ keyword, userId }: { keyword: string; userId: string }): Promise<any> {
+        const queryBuilder = userRepository
+            .createQueryBuilder('user')
+            .select([
+                'user.id as userId',
+                'user.firstName as firstName',
+                'user.lastName as lastName',
+                'user.avatar as avatar',
+            ]);
+
+        const keywords = keyword.split(' ');
+
+        keywords.forEach((word, index) => {
+            const condition = `(user.firstName like :keyword${index} OR user.lastName like :keyword${index})`;
+
+            if (index === 0) {
+                queryBuilder.where(condition, { keyword0: `%${word}%` });
+            } else {
+                queryBuilder.orWhere(condition, { [`keyword${index}`]: `%${word}%` });
+            }
+        });
+        queryBuilder.andWhere('user.id != :userId', { userId });
+
+        return await queryBuilder.getRawMany();
+    }
 }
 
 export const userService = new UserService();
