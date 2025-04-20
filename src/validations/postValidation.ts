@@ -110,6 +110,46 @@ class PostValidation {
 
         validationHandler(correctValidation, { ...req.params, ...req.body }, res, next);
     }
+
+    bookmark(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            postId: Joi.string().uuid().required(),
+        });
+
+        validationHandler(correctValidation, req.body, res, next);
+    }
+
+    deletePost(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            id: Joi.string().uuid().required(),
+        });
+
+        validationHandler(correctValidation, req.params, res, next);
+    }
+
+    getDeletedPosts(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            page: Joi.number().min(1),
+        });
+
+        validationHandler(correctValidation, req.query, res, next);
+    }
+
+    recoverPost(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            id: Joi.string().uuid().required(),
+        });
+
+        validationHandler(correctValidation, req.params, res, next);
+    }
+
+    getBookmarkPosts(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            page: Joi.number().min(1),
+        });
+
+        validationHandler(correctValidation, req.query, res, next);
+    }
 }
 
 export const postValidation = new PostValidation();

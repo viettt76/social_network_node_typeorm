@@ -1,5 +1,5 @@
 import { pageSize } from '@/constants';
-import { postResponse } from '@/constants/adminResponse';
+import { postResponse } from '@/constants/postResponse';
 import { AppDataSource } from '@/data-source';
 import { ImageOfPost } from '@/entity/ImageOfPost';
 import { Post, PostStatus } from '@/entity/Post';
@@ -25,7 +25,7 @@ class AdminService {
                 'post.createdAt as createdAt',
                 "CONCAT('[', GROUP_CONCAT(JSON_OBJECT('id', image.id, 'imageUrl', image.imageUrl)), ']') as images",
             ])
-            .andWhere('post.status != :postStatus', { postStatus: PostStatus.INVALID })
+            .where('post.status != :postStatus', { postStatus: PostStatus.INVALID })
             .offset((page - 1) * pageSize.posts)
             .limit(pageSize.posts)
             .groupBy('post.id')
@@ -65,7 +65,7 @@ class AdminService {
                 'post.createdAt as createdAt',
                 "CONCAT('[', GROUP_CONCAT(JSON_OBJECT('id', image.id, 'imageUrl', image.imageUrl)), ']') as images",
             ])
-            .andWhere('post.status = :postStatus', { postStatus: PostStatus.INVALID })
+            .where('post.status = :postStatus', { postStatus: PostStatus.INVALID })
             .offset((page - 1) * pageSize.posts)
             .limit(pageSize.posts)
             .groupBy('post.id')

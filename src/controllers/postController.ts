@@ -31,7 +31,7 @@ class PostController {
             });
         });
 
-        io.to(`user-${id}`).emit('newPost', {
+        io.to(`user-${id}`).emit('myNewPost', {
             postId: newPost.id,
             creatorId: id,
             creatorFirstName: firstName,
@@ -269,6 +269,59 @@ class PostController {
         }
 
         return res.status(httpStatusCode.OK).json();
+    }
+
+    // [POST] /posts/bookmark
+    async bookmark(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+        const { postId } = req.body;
+
+        await postService.bookmark({ postId, userId: id });
+
+        return res.status(httpStatusCode.OK).json();
+    }
+
+    // [DELETE] /posts/:id
+    async deletePost(req: Request, res: Response): Promise<any> {
+        const { id: userId } = req.userToken as CustomJwtPayload;
+        const { id: postId } = req.params;
+        const { io } = req as IoRequest;
+
+        await postService.deletePost({ postId, userId });
+
+        io.to(`user-${userId}`).emit('deletePost', postId);
+
+        return res.status(httpStatusCode.OK).json();
+    }
+
+    // [GET] /posts/deleted
+    async getDeletedPosts(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+        const { page } = req.query;
+
+        const posts = await postService.getDeletedPosts({ userId: id, page: Number(page) });
+
+        return res.status(httpStatusCode.OK).json(posts);
+    }
+
+    // [PATCH] /posts/recover/:id
+    async recoverPost(req: Request, res: Response): Promise<any> {
+        const { id: userId } = req.userToken as CustomJwtPayload;
+        const { id: postId } = req.params;
+
+        const posts = await postService.recoverPost({ postId, userId });
+
+        return res.status(httpStatusCode.OK).json(posts);
+    }
+
+    // [GET] /posts/bookmark
+    async getBookmarkPosts(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+        const { page } = req.query;
+
+        const posts = await postService.getBookmarkPosts({ userId: id, page: Number(page) });
+
+        return res.status(httpStatusCode.OK).json(posts);
     }
 }
 
