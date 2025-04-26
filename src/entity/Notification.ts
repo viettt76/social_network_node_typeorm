@@ -6,7 +6,6 @@ export enum NotificationType {
     LIKE_POST = 'LIKE_POST',
     LIKE_COMMENT = 'LIKE_COMMENT',
     COMMENT = 'COMMENT',
-    CONVERSATIOIN = 'CONVERSATIOIN',
     FRIEND_REQUEST = 'FRIEND_REQUEST',
 }
 

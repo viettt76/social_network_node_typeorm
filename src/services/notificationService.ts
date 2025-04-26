@@ -27,6 +27,7 @@ class NotificationService {
             .leftJoinAndSelect('notification.actor', 'actor')
             .select([
                 'notification.id as notificationId',
+                'notification.referenceId as referenceId',
                 'notification.content as content',
                 'notification.type as type',
                 'notification.isRead as isRead',
@@ -35,6 +36,7 @@ class NotificationService {
                 'actor.id as actorId',
                 'actor.firstName as actorFirstName',
                 'actor.lastName as actorLastName',
+                'actor.avatar as actorAvatar',
             ])
             .where('notification.userId = :userId', { userId })
             .orderBy('notification.createdAt', 'DESC')

@@ -1,12 +1,14 @@
 import { pageSize } from '@/constants';
 import { AppDataSource } from '@/data-source';
 import { FriendRequest } from '@/entity/FriendRequest';
+import { Notification, NotificationType } from '@/entity/Notification';
 import { Relationship } from '@/entity/Relationship';
 import { Role, User } from '@/entity/User';
 
 const friendRequestRepository = AppDataSource.getRepository(FriendRequest);
 const relationshipRepository = AppDataSource.getRepository(Relationship);
 const userRepository = AppDataSource.getRepository(User);
+const notificationRepository = AppDataSource.getRepository(Notification);
 
 class RelationshipService {
     async getFriends(userId: string): Promise<User[]> {
@@ -85,8 +87,8 @@ class RelationshipService {
             .getCount();
     }
 
-    async createFriendRequest({ userId, receiverId }: { userId: string; receiverId: string }): Promise<any> {
-        await friendRequestRepository.insert({
+    async createFriendRequest({ userId, receiverId }: { userId: string; receiverId: string }): Promise<FriendRequest> {
+        return await friendRequestRepository.save({
             senderId: userId,
             receiverId,
         });
@@ -150,6 +152,12 @@ class RelationshipService {
         friendRequestId: string;
     }): Promise<any> {
         await friendRequestRepository.delete({ id: friendRequestId });
+        await notificationRepository.delete({
+            userId,
+            actorId: senderId,
+            type: NotificationType.FRIEND_REQUEST,
+            referenceId: friendRequestId,
+        });
         await relationshipRepository.insert({
             user1Id: senderId,
             user2Id: userId,
@@ -158,6 +166,10 @@ class RelationshipService {
 
     async deleteFriendRequest(friendRequestId: string): Promise<any> {
         await friendRequestRepository.delete({ id: friendRequestId });
+        await notificationRepository.delete({
+            type: NotificationType.FRIEND_REQUEST,
+            referenceId: friendRequestId,
+        });
     }
 
     async unfriend({ userId, friendId }: { userId: string; friendId: string }): Promise<any> {

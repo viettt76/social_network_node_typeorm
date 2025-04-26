@@ -9,16 +9,7 @@ class NotificationController {
     async getNotifications(req: Request, res: Response): Promise<any> {
         const { id } = req.userToken as CustomJwtPayload;
 
-        const rawNotifications = await notificationService.getNotifications(id);
-
-        const notifications = rawNotifications.reduce((acc, notification) => {
-            const typeKey = notification.type;
-            if (!acc[typeKey]) {
-                acc[typeKey] = [];
-            }
-            acc[typeKey].push(notification);
-            return acc;
-        }, {} as Record<string, Notification[]>);
+        const notifications = await notificationService.getNotifications(id);
 
         return res.status(httpStatusCode.OK).json(notifications);
     }

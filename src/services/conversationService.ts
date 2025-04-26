@@ -347,19 +347,14 @@ class ConversationService {
             .andWhere('lastMessage.senderId != :userId', { userId })
             .getRawOne();
 
-        if (!message) {
-            throw new ApiError(
-                conversationResponse.READ_MESSAGE_NOT_FOUND.status,
-                conversationResponse.READ_MESSAGE_NOT_FOUND.message,
-            );
+        if (message) {
+            await messageReadRepository
+                .createQueryBuilder()
+                .insert()
+                .values({ userId, messageId: message.messageId })
+                .orIgnore()
+                .execute();
         }
-
-        await messageReadRepository
-            .createQueryBuilder()
-            .insert()
-            .values({ userId, messageId: message.messageId })
-            .orIgnore()
-            .execute();
     }
 }
 

@@ -24,25 +24,23 @@ class RelationshipController {
         const { receiverId } = req.body;
         const { io } = req as IoRequest;
 
-        const friendRequest = await relationshipService.getFriendRequestByUserId({ userId: id, receiverId });
-        if (!!friendRequest) {
-            throw new ApiError(
-                relationshipResponse.FRIEND_REQUEST_EXISTS.status,
-                relationshipResponse.FRIEND_REQUEST_EXISTS.message,
-            );
-        }
-
-        await relationshipService.createFriendRequest({ userId: id, receiverId });
+        const friendRequest = await relationshipService.createFriendRequest({ userId: id, receiverId });
         const newFriendRequestNotification = await notificationService.createNotification({
             userId: receiverId,
             actorId: id,
             type: NotificationType.FRIEND_REQUEST,
-            referenceId: id,
+            referenceId: friendRequest.id,
             content: `<b>${lastName} ${firstName}</b> đã gửi lời mời kết bạn cho bạn`,
         });
-        io.to(`user-${receiverId}`).emit('newFriendRequestNotification', {
-            friendRequestId: newFriendRequestNotification.id,
-            senderId: newFriendRequestNotification.referenceId,
+        const user = await userService.getUserFields({ userId: id, fields: ['avatar'] });
+
+        io.to(`user-${receiverId}`).emit('newFriendRequest', {
+            friendRequestId: friendRequest.id,
+            userId: id,
+            firstName: firstName,
+            lastName: lastName,
+            avatar: user?.avatar,
+            notificationId: newFriendRequestNotification.id,
             content: newFriendRequestNotification.content,
             createdAt: newFriendRequestNotification.createdAt,
         });
