@@ -19,6 +19,7 @@ const conversationRouter = (io: Server) => {
     router.post('/messages', conversationValidation.sendMessage, conversationController.sendMessage);
     router.get('/messages/:conversationId', conversationValidation.getMessages, conversationController.getMessages);
     router.get('/recent', conversationValidation.getRecentConversations, conversationController.getRecentConversations);
+    router.get('/unread', conversationController.getConversationsUnread);
     router.get(
         '/groups/members/:conversationId',
         conversationValidation.getGroupMembers,
@@ -29,6 +30,11 @@ const conversationRouter = (io: Server) => {
         '/members/:conversationId',
         conversationValidation.addGroupMembers,
         conversationController.addGroupMembers,
+    );
+    router.post(
+        '/messages/read/:conversationId',
+        conversationValidation.readMessage,
+        conversationController.readMessage,
     );
 
     return router;

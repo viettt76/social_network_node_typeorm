@@ -11,7 +11,7 @@ export class MessageRead extends Base {
     @Column({ type: 'uuid' })
     userId!: string;
 
-    @Column({ default: false })
+    @Column({ default: true })
     isRead: boolean;
 
     @ManyToOne(() => Message, (message) => message.reads)

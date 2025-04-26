@@ -102,5 +102,13 @@ class ConversationValidation {
 
         validationHandler(correctValidation, { ...req.params, ...req.body }, res, next);
     }
+
+    readMessage(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            conversationId: Joi.string().uuid().required(),
+        });
+
+        validationHandler(correctValidation, req.params, res, next);
+    }
 }
 export const conversationValidation = new ConversationValidation();

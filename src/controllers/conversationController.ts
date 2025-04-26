@@ -191,17 +191,20 @@ class ConversationController {
                     : {
                           conversationName: c.conversationName,
                           conversationAvatar: c.conversationAvatar,
-                          adminInfo: {
-                              userId: c.adminId,
-                              firstName: c.adminFirstName,
-                              lastName: c.adminLastName,
-                              avatar: c.adminAvatar,
-                          },
                       }),
             };
         });
 
         return res.status(httpStatusCode.OK).json(_recentConversations);
+    }
+
+    // [GET] /conversations/unread
+    async getConversationsUnread(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+
+        const conversationsUnread = await conversationService.getConversationsUnread(id);
+
+        return res.status(httpStatusCode.OK).json(conversationsUnread);
     }
 
     // [GET] /conversations/groups/members/:conversationId
@@ -286,6 +289,16 @@ class ConversationController {
                 })),
             );
         });
+
+        return res.status(httpStatusCode.CREATED).json();
+    }
+
+    // [POST] /conversations/messages/read/:conversationId'
+    async readMessage(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+        const { conversationId } = req.params;
+
+        await conversationService.readMessage({ userId: id, conversationId });
 
         return res.status(httpStatusCode.CREATED).json();
     }

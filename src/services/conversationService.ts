@@ -1,16 +1,20 @@
 import { pageSize } from '@/constants';
+import conversationResponse from '@/constants/conversationResponse';
 import { AppDataSource } from '@/data-source';
 import { Conversation, ConversationType } from '@/entity/Conversation';
 import { ConversationHistory } from '@/entity/ConversationHistory';
 import { ConversationParticipant, ConversationRole } from '@/entity/ConversationParticipant';
 import { Message, MessageType } from '@/entity/Message';
 import { MessageReaction, MessageReactionType } from '@/entity/MessageReaction';
+import { MessageRead } from '@/entity/MessageRead';
+import ApiError from '@/utils/ApiError';
 
 const conversationRepository = AppDataSource.getRepository(Conversation);
 const conversationParticipantRepository = AppDataSource.getRepository(ConversationParticipant);
 const conversationHistoryRepository = AppDataSource.getRepository(ConversationHistory);
 const messageRepository = AppDataSource.getRepository(Message);
 const messageReactionRepository = AppDataSource.getRepository(MessageReaction);
+const messageReadRepository = AppDataSource.getRepository(MessageRead);
 
 class ConversationService {
     async getConversationById(conversationId: string): Promise<Conversation | null> {
@@ -200,20 +204,13 @@ class ConversationService {
         return await conversationRepository
             .createQueryBuilder('conversation')
             .innerJoin(ConversationParticipant, 'cp1', 'cp1.conversationId = conversation.id')
-            .innerJoin(
+            .leftJoinAndSelect(
                 ConversationParticipant,
                 'otherCp',
                 'otherCp.userId != :userId AND otherCp.conversationId = conversation.id AND conversation.type = :privateType',
                 { userId, privateType: ConversationType.PRIVATE },
             )
-            // .leftJoin(
-            //     ConversationParticipant,
-            //     'adminCp',
-            //     'adminCp.role = :adminRole AND adminCp.conversationId = conversation.id AND conversation.type = :groupType',
-            //     { adminRole: ConversationRole.ADMIN, groupType: ConversationType.GROUP },
-            // )
-            .innerJoin('otherCp.user', 'friend')
-            // .leftJoin('adminCp.user', 'admin')
+            .leftJoinAndSelect('otherCp.user', 'friend')
             .where('cp1.userId = :userId', { userId })
             .leftJoinAndSelect('conversation.history', 'history')
             .leftJoinAndSelect('history.user', 'sender')
@@ -236,16 +233,29 @@ class ConversationService {
                 'friend.firstName as friendFirstName',
                 'friend.lastName as friendLastName',
                 'friend.avatar as friendAvatar',
-                // 'admin.id as adminId',
-                // 'admin.firstName as adminFirstName',
-                // 'admin.lastName as adminLastName',
-                // 'admin.avatar as adminAvatar',
             ])
+            .setParameter('userId', userId)
             .offset((page - 1) * pageSize.recentConversations)
             .limit(pageSize.recentConversations)
             .orderBy('COALESCE(history.updatedAt, conversation.createdAt)', 'DESC')
             .groupBy('history.id')
             .getRawMany();
+    }
+
+    async getConversationsUnread(userId: string): Promise<string[]> {
+        const conversations = await conversationRepository
+            .createQueryBuilder('conversation')
+            .innerJoin(ConversationParticipant, 'cp1', 'cp1.conversationId = conversation.id')
+            .leftJoinAndSelect('conversation.history', 'history')
+            .leftJoinAndSelect('history.lastMessage', 'lastMessage')
+            .leftJoin('lastMessage.reads', 'myRead', 'myRead.userId = :userId', { userId })
+            .where('cp1.userId = :userId', { userId })
+            .andWhere('myRead.id IS NULL')
+            .andWhere('lastMessage.senderId != :userId', { userId })
+            .select('conversation.id as conversationId')
+            .getRawMany();
+
+        return conversations.map((c) => c.conversationId);
     }
 
     async getGroupMembers({
@@ -316,6 +326,40 @@ class ConversationService {
                 role: ConversationRole.MEMBER,
             })),
         );
+    }
+
+    async getLastMessage(conversationId: string): Promise<any> {
+        return await conversationRepository
+            .createQueryBuilder('conversation')
+            .select('history.lastMessageId as messageId')
+            .leftJoin('conversation.history', 'history')
+            .where('conversation.id = :conversationId', { conversationId })
+            .getRawOne();
+    }
+
+    async readMessage({ userId, conversationId }: { userId: string; conversationId: string }): Promise<void> {
+        const message = await conversationRepository
+            .createQueryBuilder('conversation')
+            .select('history.lastMessageId as messageId')
+            .leftJoin('conversation.history', 'history')
+            .leftJoin('history.lastMessage', 'lastMessage')
+            .where('conversation.id = :conversationId', { conversationId })
+            .andWhere('lastMessage.senderId != :userId', { userId })
+            .getRawOne();
+
+        if (!message) {
+            throw new ApiError(
+                conversationResponse.READ_MESSAGE_NOT_FOUND.status,
+                conversationResponse.READ_MESSAGE_NOT_FOUND.message,
+            );
+        }
+
+        await messageReadRepository
+            .createQueryBuilder()
+            .insert()
+            .values({ userId, messageId: message.messageId })
+            .orIgnore()
+            .execute();
     }
 }
 
