@@ -1,5 +1,6 @@
-import { Entity, Column, Index, Unique } from 'typeorm';
+import { Entity, Column, Index, Unique, ManyToOne, JoinColumn } from 'typeorm';
 import { Base } from './Base';
+import { User } from './User';
 
 export enum MovieType {
     MOVIE = 'MOVIE',
@@ -35,4 +36,8 @@ export class FavoriteMovie extends Base {
 
     @Column({ type: 'enum', enum: MovieSource })
     source!: MovieSource;
+
+    @ManyToOne(() => User, (user) => user.favoriteMovies)
+    @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+    user: User;
 }

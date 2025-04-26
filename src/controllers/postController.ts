@@ -281,6 +281,16 @@ class PostController {
         return res.status(httpStatusCode.OK).json();
     }
 
+    // [DELETE] /posts/bookmark/:id
+    async unbookmark(req: Request, res: Response): Promise<any> {
+        const { id: userId } = req.userToken as CustomJwtPayload;
+        const { id: postId } = req.body;
+
+        await postService.unbookmark({ postId, userId });
+
+        return res.status(httpStatusCode.OK).json();
+    }
+
     // [DELETE] /posts/:id
     async deletePost(req: Request, res: Response): Promise<any> {
         const { id: userId } = req.userToken as CustomJwtPayload;

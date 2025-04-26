@@ -4,6 +4,7 @@ import { User } from './User';
 import { Comment } from './Comment';
 import { PostReaction } from './PostReaction';
 import { ImageOfPost } from './ImageOfPost';
+import { BookmarkPost } from './BookmarkPost';
 
 export enum PostVisibility {
     FRIEND = 'FRIEND',
@@ -45,4 +46,7 @@ export class Post extends Base {
 
     @OneToMany(() => ImageOfPost, (imageOfPost) => imageOfPost.post)
     images: ImageOfPost[];
+
+    @OneToMany(() => BookmarkPost, (bookmarkPost) => bookmarkPost.post)
+    bookmarks: BookmarkPost[];
 }

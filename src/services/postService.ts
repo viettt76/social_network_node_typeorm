@@ -81,6 +81,7 @@ class PostService {
                 'commentCount',
                 'commentCount.postId = post.id',
             )
+            .leftJoin(BookmarkPost, 'bookmark', 'bookmark.postId = post.id AND bookmark.userId = :userId', { userId })
             .select([
                 'post.id as postId',
                 'post.posterId as posterId',
@@ -102,6 +103,7 @@ class PostService {
                     });
             }, 'currentReactionType')
             .addSelect('COALESCE(commentCount.totalComments, 0)', 'commentsCount')
+            .addSelect('CASE WHEN bookmark.id IS NOT NULL THEN true ELSE false END', 'isBookmarked')
             .where((qb) => {
                 const subQuery1 = qb
                     .subQuery()
@@ -153,6 +155,7 @@ class PostService {
                         lastName: post.posterLastName,
                         avatar: post.posterAvatar,
                     },
+                    isBookmarked: Boolean(post.isBookmarked),
                     currentReactionType: post.currentReactionType,
                     commentsCount: Number(post.commentsCount),
                     reactions,
@@ -517,6 +520,19 @@ class PostService {
         });
     }
 
+    async unbookmark({ postId, userId }: { postId: string; userId: string }): Promise<void> {
+        await bookmarkPostRepository.delete({
+            postId,
+            userId,
+        });
+        // await bookmarkPostRepository
+        //     .createQueryBuilder()
+        //     .delete()
+        //     // .where('(postId = :postId AND userId = :userId)', { postId, userId })
+        //     .where('id = :id', { id: '37c1ee36-eac4-4772-8f88-a6fc22a209e7' })
+        //     .execute();
+    }
+
     async deletePost({ postId, userId }: { postId: string; userId: string }): Promise<void> {
         const post = await postRepository.findOneBy({ id: postId, posterId: userId });
 
@@ -622,6 +638,52 @@ class PostService {
             .groupBy('post.id')
             .orderBy('post.createdAt', 'DESC')
             .getRawMany();
+
+        // const posts = await bookmarkPostRepository
+        //     .createQueryBuilder('bookmark')
+        //     .innerJoin(Post, 'post', 'bookmark.postId = post.id')
+        //     // .leftJoinAndSelect(ImageOfPost, 'image', 'image.postId = post.id')
+        //     // .innerJoin(User, 'poster', 'poster.id = post.poster')
+        //     // .leftJoin(
+        //     //     (qb) =>
+        //     //         qb
+        //     //             .from(Comment, 'c')
+        //     //             .select('c.postId', 'postId')
+        //     //             .addSelect('COUNT(*)', 'totalComments')
+        //     //             .groupBy('c.postId'),
+        //     //     'commentCount',
+        //     //     'commentCount.postId = post.id',
+        //     // )
+        //     .select([
+        //         'post.id as postId',
+        //         'post.posterId as posterId',
+        //         // 'poster.firstName as posterFirstName',
+        //         // 'poster.lastName as posterLastName',
+        //         // 'poster.avatar as posterAvatar',
+        //         'post.visibilityType as visibilityType',
+        //         'post.content as content',
+        //         'post.createdAt as createdAt',
+        //         // "CONCAT('[', GROUP_CONCAT(JSON_OBJECT('id', image.id, 'imageUrl', image.imageUrl)), ']') as images",
+        //     ])
+        //     // .addSelect((qb) => {
+        //     //     return qb
+        //     //         .subQuery()
+        //     //         .from(PostReaction, 'pr')
+        //     //         .select('pr.reactionType')
+        //     //         .where('pr.userId = :userId AND pr.postId = post.id', {
+        //     //             userId,
+        //     //         });
+        //     // }, 'currentReactionType')
+        //     // .addSelect('COALESCE(commentCount.totalComments, 0)', 'commentsCount')
+        //     .where('bookmark.userId = :userId', { userId })
+        //     .andWhere('post.status != :postStatus', { postStatus: PostStatus.INVALID })
+        //     .offset((page - 1) * pageSize.posts)
+        //     .limit(pageSize.posts)
+        //     .groupBy('post.id')
+        //     .orderBy('post.createdAt', 'DESC')
+        //     .getRawMany();
+
+        console.log(posts);
 
         const result = await Promise.all(
             posts.map(async (post) => {

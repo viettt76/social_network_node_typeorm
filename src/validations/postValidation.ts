@@ -119,6 +119,14 @@ class PostValidation {
         validationHandler(correctValidation, req.body, res, next);
     }
 
+    unbookmark(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            id: Joi.string().uuid().required(),
+        });
+
+        validationHandler(correctValidation, req.params, res, next);
+    }
+
     deletePost(req: Request, res: Response, next: NextFunction) {
         const correctValidation = Joi.object({
             id: Joi.string().uuid().required(),

@@ -19,6 +19,7 @@ const postRouter = (io: Server) => {
     router.get('/comments/:commentId/replies', postValidation.getCommentReplies, postController.getCommentReplies);
     router.put('/comments/reactions/:commentId', postValidation.reactToComment, postController.reactToComment);
     router.post('/bookmark', postValidation.bookmark, postController.bookmark);
+    router.delete('/bookmark/:id', postValidation.unbookmark, postController.unbookmark);
     router.delete('/:id', postValidation.deletePost, postController.deletePost);
     router.get('/deleted', postValidation.getDeletedPosts, postController.getDeletedPosts);
     router.patch('/recover/:id', postValidation.recoverPost, postController.recoverPost);

@@ -11,6 +11,8 @@ import { Message } from './Message';
 import { Notification } from './Notification';
 import { Post } from './Post';
 import { Relationship } from './Relationship';
+import { BookmarkPost } from './BookmarkPost';
+import { FavoriteMovie } from './FavoriteMovie';
 
 export enum Gender {
     MALE = 'MALE',
@@ -125,4 +127,10 @@ export class User extends Base {
         cascade: ['soft-remove', 'recover', 'remove'],
     })
     relationshipAsUser2: Relationship[];
+
+    @OneToMany(() => BookmarkPost, (bookmarkPost) => bookmarkPost.user)
+    bookmarks: BookmarkPost[];
+
+    @OneToMany(() => FavoriteMovie, (favoriteMovie) => favoriteMovie.user)
+    favoriteMovies: FavoriteMovie;
 }
