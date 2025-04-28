@@ -88,7 +88,7 @@ class ConversationController {
     // [POST] /conversations/messages
     async sendMessage(req: Request, res: Response): Promise<any> {
         const { id, firstName, lastName } = req.userToken as CustomJwtPayload;
-        const { conversationId, content, type, image } = req.body;
+        const { conversationId, content, type, image, fileName } = req.body;
         const { io } = req as IoRequest;
 
         const conversation = await conversationService.getConversationById(conversationId);
@@ -105,6 +105,7 @@ class ConversationController {
             conversationId,
             content: content || image,
             type,
+            fileName,
         });
 
         const sender = await userService.getUserFields({ userId: id, fields: ['avatar'] });
@@ -119,6 +120,7 @@ class ConversationController {
             conversationId,
             content: newMessage.content,
             messageType: type,
+            fileName: newMessage.fileName,
             sender: {
                 userId: id,
                 firstName,

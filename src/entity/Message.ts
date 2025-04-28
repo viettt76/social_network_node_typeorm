@@ -24,6 +24,9 @@ export class Message extends Base {
     @Column({ type: 'text', nullable: true })
     content?: string;
 
+    @Column({ type: 'text', nullable: true })
+    fileName?: string;
+
     @Column({
         type: 'enum',
         enum: MessageType,

@@ -42,6 +42,7 @@ class ConversationValidation {
                     }),
                     otherwise: Joi.optional(),
                 }),
+            fileName: Joi.string().allow(''),
         });
 
         validationHandler(correctValidation, req.body, res, next);

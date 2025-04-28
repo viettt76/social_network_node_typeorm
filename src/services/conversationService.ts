@@ -93,17 +93,20 @@ class ConversationService {
         conversationId,
         content,
         type,
+        fileName,
     }: {
         senderId: string;
         conversationId: string;
         content: string;
         type: MessageType;
+        fileName?: string;
     }): Promise<Message> {
         const newMessage = await messageRepository.save({
             senderId,
             conversationId,
             content,
             messageType: type,
+            fileName,
         });
 
         await conversationHistoryRepository.upsert(
@@ -135,6 +138,7 @@ class ConversationService {
                 'message.id as id',
                 'message.conversationId as conversationId',
                 'message.content as content',
+                'message.fileName as fileName',
                 'message.messageType as messageType',
                 'message.createdAt as createdAt',
                 'sender.id as senderId',
@@ -169,6 +173,7 @@ class ConversationService {
                     id: m.id,
                     conversationId: m.conversationId,
                     content: m.content,
+                    fileName: m.fileName,
                     messageType: m.messageType,
                     createdAt: m.createdAt,
                     sender: {
