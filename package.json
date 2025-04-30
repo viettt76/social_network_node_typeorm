@@ -4,7 +4,7 @@
     "description": "Awesome project developed with TypeORM.",
     "scripts": {
         "dev": "cross-env BUILD_MODE=dev nodemon --watch src --exec ts-node src/server.ts",
-        "start": "cross-env BUILD_MODE=production ts-node src/server.ts",
+        "start": "NODE_OPTIONS='--max_old_space_size=2048' cross-env BUILD_MODE=production ts-node src/server.ts",
         "seed:run": "ts-node src/seed/seed.ts",
         "typeorm": "npx typeorm-ts-node-commonjs",
         "migration:generate": "npm run typeorm migration:generate -- -d src/data-source.ts",
