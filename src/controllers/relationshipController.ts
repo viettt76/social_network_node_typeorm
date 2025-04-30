@@ -24,6 +24,14 @@ class RelationshipController {
         const { receiverId } = req.body;
         const { io } = req as IoRequest;
 
+        const fq = await relationshipService.getFriendRequestByUserId({ userId: id, receiverId });
+
+        if (fq)
+            throw new ApiError(
+                relationshipResponse.FRIEND_REQUEST_EXISTS.status,
+                relationshipResponse.FRIEND_REQUEST_EXISTS.message,
+            );
+
         const friendRequest = await relationshipService.createFriendRequest({ userId: id, receiverId });
         const newFriendRequestNotification = await notificationService.createNotification({
             userId: receiverId,
