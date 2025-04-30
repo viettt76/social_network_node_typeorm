@@ -200,6 +200,34 @@ class RelationshipService {
             .limit(pageSize.friendRequests)
             .getRawMany();
     }
+
+    async getRelationship({
+        currentUserId,
+        targetUserId,
+    }: {
+        currentUserId: string;
+        targetUserId: string;
+    }): Promise<string | null> {
+        const fq = await friendRequestRepository.findOne({
+            where: [
+                { senderId: currentUserId, receiverId: targetUserId },
+                { senderId: targetUserId, receiverId: currentUserId },
+            ],
+        });
+
+        if (fq) return 'FRIEND_REQUEST';
+
+        const friend = await relationshipRepository.findOne({
+            where: [
+                { user1Id: currentUserId, user2Id: targetUserId },
+                { user1Id: targetUserId, user2Id: currentUserId },
+            ],
+        });
+
+        if (friend) return 'FRIEND';
+
+        return null;
+    }
 }
 
 export const relationshipService = new RelationshipService();

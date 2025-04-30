@@ -3,6 +3,7 @@ import { CustomJwtPayload } from '@/custom';
 import { httpStatusCode } from '@/constants/httpStatusCode';
 import userResponse from '@/constants/userResponse';
 import { userService } from '@/services/userService';
+import { relationshipService } from '@/services/relationshipService';
 
 class UserController {
     // [GET] /users/me
@@ -36,16 +37,23 @@ class UserController {
 
     // [GET] /users/information/:userId
     async getUserInfo(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
         const { userId } = req.params;
 
         const user = await userService.findUserById(userId);
 
         if (user) {
+            const relationship = await relationshipService.getRelationship({
+                currentUserId: id,
+                targetUserId: userId,
+            });
+
             return res.status(httpStatusCode.OK).json({
                 lastName: user.lastName,
                 firstName: user.firstName,
                 avatar: user.avatar,
                 isPrivate: user.isPrivate,
+                relationship,
                 ...(!user.isPrivate && {
                     birthday: user.birthday,
                     gender: user.gender,
@@ -55,8 +63,6 @@ class UserController {
                 }),
             });
         } else {
-            res.clearCookie('token');
-            res.clearCookie('refreshToken');
             return res.status(userResponse.USER_NOT_FOUND.status).json({
                 message: userResponse.USER_NOT_FOUND.message,
             });

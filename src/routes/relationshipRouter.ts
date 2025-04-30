@@ -28,6 +28,11 @@ const relationshipRouter = (io: Server) => {
         relationshipValidation.deleteFriendRequest,
         relationshipController.deleteFriendRequest,
     );
+    router.delete(
+        '/friend-requests/:userId/user',
+        relationshipValidation.deleteFriendRequestByUserId,
+        relationshipController.deleteFriendRequestByUserId,
+    );
     router.get('/friends', relationshipValidation.getFriends, relationshipController.getFriends);
     router.delete('/friends/:friendId', relationshipValidation.unfriend, relationshipController.unfriend);
 

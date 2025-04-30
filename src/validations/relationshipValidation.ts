@@ -52,6 +52,14 @@ class RelationshipValidation {
         validationHandler(correctValidation, req.params, res, next);
     }
 
+    deleteFriendRequestByUserId(req: Request, res: Response, next: NextFunction) {
+        const correctValidation = Joi.object({
+            userId: Joi.string().uuid().required(),
+        });
+
+        validationHandler(correctValidation, req.params, res, next);
+    }
+
     getFriends(req: Request, res: Response, next: NextFunction) {
         const correctValidation = Joi.object({
             userId: Joi.string().uuid().allow(null),

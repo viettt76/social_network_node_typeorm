@@ -120,6 +120,24 @@ class RelationshipController {
         return res.status(httpStatusCode.NO_CONTENT).json();
     }
 
+    // [DELETE] /relationships/friend-requests/:userId/user
+    async deleteFriendRequestByUserId(req: Request, res: Response): Promise<any> {
+        const { id } = req.userToken as CustomJwtPayload;
+        const { userId } = req.params;
+
+        const friendRequest = await relationshipService.getFriendRequestByUserId({ userId: id, receiverId: userId });
+
+        if (!friendRequest) {
+            return res.status(relationshipResponse.ALREADY_FRIENDS.status).json({
+                message: relationshipResponse.ALREADY_FRIENDS.message,
+            });
+        }
+
+        await relationshipService.deleteFriendRequest(friendRequest.id);
+
+        return res.status(httpStatusCode.NO_CONTENT).json();
+    }
+
     // [GET] /relationships/friends
     async getFriends(req: Request, res: Response): Promise<any> {
         const { id } = req.userToken as CustomJwtPayload;
