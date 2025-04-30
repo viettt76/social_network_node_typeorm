@@ -3,7 +3,9 @@
     "version": "0.0.1",
     "description": "Awesome project developed with TypeORM.",
     "scripts": {
+        "tsc": "tsc",
         "dev": "cross-env BUILD_MODE=dev nodemon --watch src --exec ts-node src/server.ts",
+        "build": "cross-env BUILD_MODE=production node dist/server.js",
         "seed:run": "ts-node src/seed/seed.ts",
         "typeorm": "npx typeorm-ts-node-commonjs",
         "migration:generate": "npm run typeorm migration:generate -- -d src/data-source.ts",
