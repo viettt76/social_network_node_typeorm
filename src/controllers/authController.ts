@@ -76,7 +76,7 @@ class AuthController {
                 maxAge: eval(tokenMaxAge),
             });
             res.cookie('refreshToken', refreshToken, {
-                domain: new URL(frontendUrl).hostname,
+                // domain: new URL(frontendUrl).hostname,
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
