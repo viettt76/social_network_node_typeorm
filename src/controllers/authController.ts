@@ -52,8 +52,9 @@ class AuthController {
             const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
             const tokenMaxAge = process.env.TOKEN_MAX_AGE;
             const refreshTokenMaxAge = process.env.REFRESH_TOKEN_MAX_AGE;
+            const frontendUrl = process.env.FRONTEND_URL;
 
-            if (!jwtAccessSecret || !jwtRefreshSecret || !tokenMaxAge || !refreshTokenMaxAge) {
+            if (!jwtAccessSecret || !jwtRefreshSecret || !tokenMaxAge || !refreshTokenMaxAge || !frontendUrl) {
                 throw new Error('Missing JWT secrets or jwt max age');
             }
 
@@ -68,14 +69,14 @@ class AuthController {
             const refreshToken = jwt.sign(payload, jwtRefreshSecret);
 
             res.cookie('token', token, {
-                domain: process.env.FRONTEND_URL,
+                domain: new URL(frontendUrl).hostname,
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
                 maxAge: eval(tokenMaxAge),
             });
             res.cookie('refreshToken', refreshToken, {
-                domain: process.env.FRONTEND_URL,
+                domain: new URL(frontendUrl).hostname,
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
