@@ -68,12 +68,14 @@ class AuthController {
             const refreshToken = jwt.sign(payload, jwtRefreshSecret);
 
             res.cookie('token', token, {
+                domain: process.env.FRONTEND_URL,
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
                 maxAge: eval(tokenMaxAge),
             });
             res.cookie('refreshToken', refreshToken, {
+                domain: process.env.FRONTEND_URL,
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
