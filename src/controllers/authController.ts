@@ -69,7 +69,7 @@ class AuthController {
             const refreshToken = jwt.sign(payload, jwtRefreshSecret);
 
             res.cookie('token', token, {
-                domain: new URL(frontendUrl).hostname,
+                // domain: new URL(frontendUrl).hostname,
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
