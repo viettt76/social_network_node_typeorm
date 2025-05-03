@@ -74,6 +74,7 @@ class AuthController {
                 sameSite: 'none',
                 secure: true,
                 maxAge: eval(tokenMaxAge),
+                path: '/',
             });
             res.cookie('refreshToken', refreshToken, {
                 // domain: new URL(frontendUrl).hostname,
@@ -81,6 +82,7 @@ class AuthController {
                 sameSite: 'none',
                 secure: true,
                 maxAge: eval(refreshTokenMaxAge),
+                path: '/',
             });
             return res.status(httpStatusCode.OK).json();
         } else {
