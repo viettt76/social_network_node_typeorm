@@ -4,14 +4,20 @@
     "description": "Awesome project developed with TypeORM.",
     "scripts": {
         "dev": "cross-env BUILD_MODE=dev nodemon --watch src --exec ts-node src/server.ts",
-        "start": "NODE_OPTIONS='--max_old_space_size=2048' cross-env BUILD_MODE=production ts-node src/server.ts",
+        "start": "cross-env BUILD_MODE=production nodemon src/server.ts",
         "seed:run": "ts-node src/seed/seed.ts",
         "typeorm": "npx typeorm-ts-node-commonjs",
         "migration:generate": "npm run typeorm migration:generate -- -d src/data-source.ts",
         "migration:run": "npm run typeorm migration:run -- -d src/data-source.ts",
         "migration:revert": "npm run typeorm migration:revert",
-        "drop-schema": "npm run typeorm schema:drop -- -d src/data-source.ts"
+        "drop-schema": "npm run typeorm schema:drop -- -d src/data-source.ts",
+        "build": "rimraf dist && tsc",
+        "ts-check": "tsc --project tsconfig.json"
     },
+    "pre-commit": [
+        "ts-check",
+        "build"
+    ],
     "dependencies": {
         "bcrypt": "^5.1.1",
         "cookie": "^1.0.2",
@@ -37,6 +43,8 @@
         "@types/node": "^22.10.7",
         "cross-env": "^7.0.3",
         "nodemon": "^3.1.4",
+        "pre-commit": "^1.2.2",
+        "rimraf": "^6.0.1",
         "ts-node": "^10.9.2",
         "tsconfig-paths": "^4.2.0",
         "typescript": "^5.7.3"
