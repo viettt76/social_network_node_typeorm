@@ -23,7 +23,7 @@ AppDataSource.initialize()
         app.use(express.json());
         app.use(
             cors({
-                origin: 'https://heyoy.vercel.app',
+                origin: process.env.FRONTEND_URL,
                 credentials: true,
             }),
         );
