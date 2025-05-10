@@ -11,14 +11,11 @@
         "migration:run": "npm run typeorm migration:run -- -d src/data-source.ts",
         "migration:revert": "npm run typeorm migration:revert",
         "drop-schema": "npm run typeorm schema:drop -- -d src/data-source.ts",
-        "build": "rimraf dist && tsc",
+        "build": "tsc",
         "ts-check": "tsc --project tsconfig.json"
     },
-    "pre-commit": [
-        "ts-check",
-        "build"
-    ],
     "dependencies": {
+        "@vercel/node": "^5.1.15",
         "bcrypt": "^5.1.1",
         "cookie": "^1.0.2",
         "cookie-parser": "^1.4.6",
