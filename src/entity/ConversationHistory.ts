@@ -24,7 +24,7 @@ export class ConversationHistory extends Base {
     @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
     user: User;
 
-    @ManyToOne(() => Message, (message) => message.id)
+    @OneToOne(() => Message, (message) => message.id)
     @JoinColumn({ name: 'lastMessageId', referencedColumnName: 'id' })
     lastMessage: Message;
 }

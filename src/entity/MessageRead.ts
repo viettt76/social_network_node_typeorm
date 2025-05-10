@@ -1,6 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { Base } from './Base';
 import { Message } from './Message';
+import { User } from './User';
 
 @Entity('message_reads')
 @Unique(['messageId', 'userId'])
@@ -17,4 +18,8 @@ export class MessageRead extends Base {
     @ManyToOne(() => Message, (message) => message.reads)
     @JoinColumn({ name: 'messageId', referencedColumnName: 'id' })
     message: Message;
+
+    @ManyToOne(() => User, (user) => user.messageReads)
+    @JoinColumn({ name: 'userId', referencedColumnName: 'id' })
+    user: User;
 }

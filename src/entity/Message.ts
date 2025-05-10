@@ -3,6 +3,7 @@ import { Base } from './Base';
 import { User } from './User';
 import { MessageReaction } from './MessageReaction';
 import { MessageRead } from './MessageRead';
+import { Conversation } from './Conversation';
 
 export enum MessageType {
     TEXT = 'TEXT',
@@ -40,6 +41,10 @@ export class Message extends Base {
     @ManyToOne(() => User, (user) => user.message)
     @JoinColumn({ name: 'senderId', referencedColumnName: 'id' })
     sender: User;
+
+    @ManyToOne(() => Conversation, (conversation) => conversation.messages)
+    @JoinColumn({ name: 'conversationId', referencedColumnName: 'id' })
+    conversation: Conversation;
 
     @OneToMany(() => MessageReaction, (messageReaction) => messageReaction.message)
     reactions: MessageReaction[];

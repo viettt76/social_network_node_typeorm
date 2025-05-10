@@ -13,6 +13,7 @@ import { Post } from './Post';
 import { Relationship } from './Relationship';
 import { BookmarkPost } from './BookmarkPost';
 import { FavoriteMovie } from './FavoriteMovie';
+import { MessageRead } from './MessageRead';
 
 export enum Gender {
     MALE = 'MALE',
@@ -136,4 +137,7 @@ export class User extends Base {
 
     @OneToMany(() => FavoriteMovie, (favoriteMovie) => favoriteMovie.user)
     favoriteMovies: FavoriteMovie;
+
+    @OneToMany(() => MessageRead, (messageRead) => messageRead.user)
+    messageReads: MessageRead[];
 }
