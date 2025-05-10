@@ -37,6 +37,7 @@ class AuthController {
                 if (checkPassword) {
                     return res.status(authResponse.ACCOUNT_DELETED.status).json({
                         message: authResponse.ACCOUNT_DELETED.message,
+                        code: authResponse.ACCOUNT_DELETED.code,
                     });
                 }
             }
@@ -48,6 +49,13 @@ class AuthController {
         const checkPassword = bcrypt.compareSync(password, user.password);
 
         if (checkPassword) {
+            if (!user?.isActive) {
+                return res.status(authResponse.ACCOUNT_LOCKED.status).json({
+                    message: authResponse.ACCOUNT_LOCKED.message,
+                    code: authResponse.ACCOUNT_LOCKED.code,
+                });
+            }
+
             const jwtAccessSecret = process.env.JWT_ACCESS_SECRET;
             const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
             const tokenMaxAge = process.env.TOKEN_MAX_AGE;
@@ -69,7 +77,6 @@ class AuthController {
             const refreshToken = jwt.sign(payload, jwtRefreshSecret);
 
             res.cookie('token', token, {
-                // domain: new URL(frontendUrl).hostname,
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
@@ -77,7 +84,6 @@ class AuthController {
                 path: '/',
             });
             res.cookie('refreshToken', refreshToken, {
-                // domain: new URL(frontendUrl).hostname,
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,

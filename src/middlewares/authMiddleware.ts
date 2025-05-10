@@ -1,9 +1,10 @@
 import { authResponse } from '@/constants/authResponse';
 import { CustomJwtPayload } from '@/custom';
+import { userService } from '@/services/userService';
 import { NextFunction, Request, Response } from 'express';
 import { verify, sign, JwtPayload, VerifyErrors } from 'jsonwebtoken';
 
-const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     const nonSecurePaths = ['/auth/users', '/auth/token', '/auth/recover-account'];
     if (nonSecurePaths.includes(req.path)) return next();
 
@@ -17,8 +18,19 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
 
     const { token, refreshToken } = req.cookies;
 
-    const handleRefreshToken = () => {
+    const handleRefreshToken = async () => {
         const userToken = verify(refreshToken, jwtRefreshSecret) as CustomJwtPayload;
+
+        const user = await userService.getUserFields({ userId: userToken.id, fields: ['isActive'] });
+
+        if (!user?.isActive) {
+            res.clearCookie('token');
+            res.clearCookie('refreshToken');
+            return res.status(authResponse.ACCOUNT_LOCKED.status).json({
+                message: authResponse.ACCOUNT_LOCKED.message,
+                code: authResponse.ACCOUNT_LOCKED.code,
+            });
+        }
 
         const newToken = sign(
             {
@@ -38,6 +50,7 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
         });
 
         req.userToken = userToken;
+        return next();
     };
 
     const handleInvalidToken = (message: string) => {
@@ -55,34 +68,46 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     if (!token) {
         if (refreshToken) {
             try {
-                handleRefreshToken();
-                return next();
+                return await handleRefreshToken();
+                // return next();
             } catch (err) {
-                handleInvalidRefreshToken();
+                return handleInvalidRefreshToken();
             }
         } else {
-            handleInvalidToken(authResponse.INVALID_TOKEN.message);
+            return handleInvalidToken(authResponse.INVALID_TOKEN.message);
         }
     } else {
-        verify(token, jwtAccessSecret, (err: VerifyErrors | null, userToken: JwtPayload | string | undefined) => {
+        verify(token, jwtAccessSecret, async (err: VerifyErrors | null, userToken: JwtPayload | string | undefined) => {
             if (err) {
                 if (refreshToken) {
                     try {
-                        handleRefreshToken();
-                        return next();
+                        return await handleRefreshToken();
+                        // return next();
                     } catch (err) {
-                        handleInvalidRefreshToken();
+                        return handleInvalidRefreshToken();
                     }
                 } else {
-                    handleInvalidToken(authResponse.INVALID_TOKEN.message);
+                    return handleInvalidToken(authResponse.INVALID_TOKEN.message);
                 }
             }
 
             if (userToken && typeof userToken !== 'string') {
-                req.userToken = userToken;
-            }
+                (async () => {
+                    const user = await userService.getUserFields({ userId: userToken.id, fields: ['isActive'] });
 
-            return next();
+                    if (!user?.isActive) {
+                        res.clearCookie('token');
+                        res.clearCookie('refreshToken');
+                        return res.status(authResponse.ACCOUNT_LOCKED.status).json({
+                            message: authResponse.ACCOUNT_LOCKED.message,
+                            code: authResponse.ACCOUNT_LOCKED.code,
+                        });
+                    }
+
+                    req.userToken = userToken;
+                    return next();
+                })();
+            }
         });
     }
 };

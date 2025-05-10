@@ -8,6 +8,7 @@ export const authResponse = {
     ACCOUNT_DELETED: {
         status: httpStatusCode.FORBIDDEN,
         message: 'Your account has been deleted',
+        code: 'ACCOUNT_SOFT_DELETED',
     },
     LOGIN_INCORRECT: {
         status: httpStatusCode.UNAUTHORIZED,
@@ -32,5 +33,10 @@ export const authResponse = {
     RECOVER_ACCOUNT_PASSWORD_INCORRECT: {
         status: httpStatusCode.BAD_REQUEST,
         message: 'Password incorrect',
+    },
+    ACCOUNT_LOCKED: {
+        status: httpStatusCode.FORBIDDEN,
+        message: 'Your account is locked.',
+        code: 'ACCOUNT_LOCKED',
     },
 };

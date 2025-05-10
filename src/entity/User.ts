@@ -63,6 +63,9 @@ export class User extends Base {
     @Column({ type: 'enum', enum: Role, default: Role.USER })
     role!: Role;
 
+    @Column({ default: true })
+    isActive!: boolean;
+
     @OneToMany(() => Comment, (comment) => comment.commentator, {
         cascade: ['soft-remove', 'recover', 'remove'],
     })

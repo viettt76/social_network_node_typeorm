@@ -1,12 +1,18 @@
 import { pageSize } from '@/constants';
 import { postResponse } from '@/constants/postResponse';
+import userResponse from '@/constants/userResponse';
 import { AppDataSource } from '@/data-source';
 import { ImageOfPost } from '@/entity/ImageOfPost';
 import { Post, PostStatus } from '@/entity/Post';
-import { User } from '@/entity/User';
+import { Role, User } from '@/entity/User';
 import ApiError from '@/utils/ApiError';
+import { Not } from 'typeorm';
+import bcrypt from 'bcrypt';
+
+const saltRounds = 10;
 
 const postRepository = AppDataSource.getRepository(Post);
+const userRepository = AppDataSource.getRepository(User);
 
 class AdminService {
     async getPostsNotCensored(page: number): Promise<any[]> {
@@ -99,6 +105,50 @@ class AdminService {
         post.status = status;
 
         await postRepository.save(post);
+    }
+
+    async getUsers({ adminId, page }: { adminId: string; page: number }): Promise<[User[], number]> {
+        return await userRepository.findAndCount({
+            where: { id: Not(adminId) },
+            select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                role: true,
+                isActive: true,
+            },
+            take: pageSize.manageUser,
+            skip: (page - 1) * pageSize.manageUser,
+        });
+    }
+
+    async setActiveUser({ userId, isActive }: { userId: string; isActive: boolean }): Promise<void> {
+        const user = await userRepository.findOneBy({ id: userId });
+        if (!user) throw new ApiError(userResponse.USER_NOT_FOUND.status, userResponse.USER_NOT_FOUND.message);
+
+        user.isActive = isActive;
+        await userRepository.save(user);
+    }
+
+    async createUser(userInfo: {
+        firstName: string;
+        lastName: string;
+        username: string;
+        password: string;
+        role: Role;
+    }): Promise<void> {
+        const { firstName, lastName, username, password, role } = userInfo;
+
+        const hashPassword = bcrypt.hashSync(password, saltRounds);
+
+        await userRepository.insert({
+            firstName,
+            lastName,
+            username,
+            password: hashPassword,
+            role,
+        });
     }
 }
 

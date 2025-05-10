@@ -6,4 +6,5 @@ export const pageSize = {
     messages: 20,
     recentConversations: 5,
     groupConversationMembers: 10,
+    manageUser: 4,
 };

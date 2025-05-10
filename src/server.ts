@@ -1,6 +1,6 @@
 import 'tsconfig-paths/register';
 import dotenv from 'dotenv';
-import express from 'express';
+import express, { NextFunction, Request, RequestHandler, Response } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { Server } from 'socket.io';
@@ -39,7 +39,13 @@ AppDataSource.initialize()
 
         getRedisClient();
 
-        app.use(authMiddleware);
+        const wrapAsync =
+            (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>): RequestHandler =>
+            (req, res, next) => {
+                fn(req, res, next).catch(next);
+            };
+
+        app.use(wrapAsync(authMiddleware));
 
         events(io);
         routes(app, io);
