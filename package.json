@@ -15,7 +15,6 @@
         "ts-check": "tsc --project tsconfig.json"
     },
     "dependencies": {
-        "@vercel/node": "^5.1.15",
         "bcrypt": "^5.1.1",
         "cookie": "^1.0.2",
         "cookie-parser": "^1.4.6",
