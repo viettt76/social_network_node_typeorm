@@ -77,7 +77,6 @@ class AuthController {
             const refreshToken = jwt.sign(payload, jwtRefreshSecret);
 
             res.cookie('token', token, {
-                domain: 'onrender.com',
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
@@ -85,7 +84,6 @@ class AuthController {
                 path: '/',
             });
             res.cookie('refreshToken', refreshToken, {
-                domain: 'onrender.com',
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true,
