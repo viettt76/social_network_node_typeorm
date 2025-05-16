@@ -3,8 +3,9 @@ import { CustomJwtPayload } from '@/custom';
 import { userService } from '@/services/userService';
 import { NextFunction, Request, Response } from 'express';
 import { verify, sign, JwtPayload, VerifyErrors } from 'jsonwebtoken';
+import { Server } from 'socket.io';
 
-const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+const authMiddleware = async (req: Request, res: Response, next: NextFunction, io: Server) => {
     const nonSecurePaths = ['/auth/users', '/auth/token', '/auth/recover-account'];
     if (nonSecurePaths.includes(req.path)) return next();
 
@@ -69,7 +70,6 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
         if (refreshToken) {
             try {
                 return await handleRefreshToken();
-                // return next();
             } catch (err) {
                 return handleInvalidRefreshToken();
             }
@@ -82,7 +82,6 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
                 if (refreshToken) {
                     try {
                         return await handleRefreshToken();
-                        // return next();
                     } catch (err) {
                         return handleInvalidRefreshToken();
                     }
@@ -96,8 +95,11 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
                     const user = await userService.getUserFields({ userId: userToken.id, fields: ['isActive'] });
 
                     if (!user?.isActive) {
+                        io.to(`user-${userToken.id}`).emit('accountLocked', authResponse.ACCOUNT_LOCKED.message);
+
                         res.clearCookie('token');
                         res.clearCookie('refreshToken');
+
                         return res.status(authResponse.ACCOUNT_LOCKED.status).json({
                             message: authResponse.ACCOUNT_LOCKED.message,
                             code: authResponse.ACCOUNT_LOCKED.code,
