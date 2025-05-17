@@ -337,6 +337,13 @@ class ConversationService {
         );
     }
 
+    async deleteGroupMember({ conversationId, userId }: { conversationId: string; userId: string }): Promise<void> {
+        await conversationParticipantRepository.delete({
+            conversationId,
+            userId,
+        });
+    }
+
     async getLastMessage(conversationId: string): Promise<any> {
         return await conversationRepository
             .createQueryBuilder('conversation')
