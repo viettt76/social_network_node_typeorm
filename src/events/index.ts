@@ -22,7 +22,7 @@ const events = (io: Server) => {
             const userId = userToken.id;
             if (!userId) return socket.disconnect();
 
-            socket.join(`user-${userToken.id}`);
+            socket.join(`user-${userId}`);
 
             await addUserOnline(userId);
             await addOnlineFriends(userId);
